@@ -1,6 +1,7 @@
 import argparse
 import os
 import json
+import logging
 from tqdm import tqdm
 
 from prompts import Prompt_Loader
@@ -53,8 +54,9 @@ class Reasoning_Program_Generator:
 
         # generate programs
         temperature = 0.6
-        top_p = 0.9,
-        max_gen_len = 64,
+        top_p = 0.9
+        max_gen_len = 2048
+
 
         outputs = []
         # split dataset into chunks
@@ -79,6 +81,7 @@ class Reasoning_Program_Generator:
                 # create prompt
                 full_prompts = [self.prompt_loader.prompt_construction(example['claim'], self.dataset_name) for example
                                 in chunk]
+                print(chunk)
                 try:
                     batch_outputs = self.model.text_completion(
                         full_prompts,
@@ -100,7 +103,8 @@ class Reasoning_Program_Generator:
                                 top_p=top_p,
                             )
                             self.update_results(sample, output)
-                        except:
+                        except Exception as e:
+                            logging.exception(e)
                             print('Error in generating reasoning programs for example: ', sample['id'])
 
         print(f"Generated {len(result_dict)} examples.")
@@ -127,9 +131,9 @@ def parse_args():
     parser.add_argument('--stop_words', type=str, default='# The claim is')
     parser.add_argument('--max_new_tokens', type=int, default=1024)
 
-    parser.add_argument('--ckpt_dir',type=str,default='../../llama/llama-2-13b/')
-    parser.add_argument('--tokenizer_path',type=str,default='../../llama/tokenizer.model')
-    parser.add_argument('--max_seq_len',type=int,default=512)
+    parser.add_argument('--ckpt_dir',type=str,default='../llama/llama-2-13b/')
+    parser.add_argument('--tokenizer_path',type=str,default='../llama/tokenizer.model')
+    parser.add_argument('--max_seq_len',type=int,default=4096)
     parser.add_argument('--max_batch_size',type=int,default=6)
 
     args = parser.parse_args()
@@ -197,5 +201,6 @@ def main(
 if __name__ == "__main__":
     args = parse_args()
     generator = Reasoning_Program_Generator(args)
+    print("initialized")
     generator.batch_generate_programs()
     # fire.Fire(main)

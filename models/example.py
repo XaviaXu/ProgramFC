@@ -7,8 +7,8 @@ from llama import Llama
 from typing import List
 
 def main(
-        # ckpt_dir: str = "../../llama/llama-2-13b/",
-        # tokenizer_path: str = "../../llama/tokenizer.model",
+        ckpt_dir: str,
+        tokenizer_path: str,
         temperature: float = 0.6,
         top_p: float = 0.9,
         max_seq_len: int = 128,
@@ -29,8 +29,10 @@ def main(
         max_gen_len (int, optional): The maximum length of generated sequences. Defaults to 64.
         max_batch_size (int, optional): The maximum batch size for generating sequences. Defaults to 4.
     """
-    ckpt_dir ="../../llama/llama-2-13b/"
-    tokenizer_path = "../../llama/tokenizer.model",
+
+    print(ckpt_dir)
+    print(tokenizer_path)
+    
     generator = Llama.build(
         ckpt_dir=ckpt_dir,
         tokenizer_path=tokenizer_path,
