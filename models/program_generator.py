@@ -35,9 +35,11 @@ class Reasoning_Program_Generator:
         )
 
     def update_results(self, sample, generated_text):
-        program_list = [operation.strip() for operation in generated_text.split('\n')]
+        #program_list = [operation.strip() for operation in generated_text.split('\n')]
         # programs = [program_list]
-        self.result_dict[sample['id']]['predicted_programs'].append(program_list)
+        text=generated_text['generation'].split('\n\n')[0]
+        print(text)
+        self.result_dict[sample['id']]['predicted_programs'].append(text)
 
     def batch_generate_programs(self, batch_size=10):
         # create output_dir
@@ -81,7 +83,6 @@ class Reasoning_Program_Generator:
                 # create prompt
                 full_prompts = [self.prompt_loader.prompt_construction(example['claim'], self.dataset_name) for example
                                 in chunk]
-                print(chunk)
                 try:
                     batch_outputs = self.model.text_completion(
                         full_prompts,
