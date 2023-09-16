@@ -7,13 +7,13 @@ from llama import Llama
 from typing import List
 
 def main(
-    ckpt_dir: str,
-    tokenizer_path: str,
-    temperature: float = 0.6,
-    top_p: float = 0.9,
-    max_seq_len: int = 128,
-    max_gen_len: int = 64,
-    max_batch_size: int = 4,
+        ckpt_dir: str = '../../llama/llama-2-13b/',
+        tokenizer_path: str = '../../llama/tokenizer.model',
+        temperature: float = 0.6,
+        top_p: float = 0.9,
+        max_seq_len: int = 128,
+        max_gen_len: int = 64,
+        max_batch_size: int = 4,
 ):
     """
     Entry point of the program for generating text using a pretrained model.
