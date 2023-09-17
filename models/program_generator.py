@@ -39,10 +39,12 @@ class Reasoning_Program_Generator:
         #program_list = [operation.strip() for operation in generated_text.split('\n')]
         # programs = [program_list]
 
-        match=re.search(r'([s\S]*?label\s*=\s*Predict\(.*?\))',generated_text['generation'])
+        match=re.search(r'([\s\S]*?label\s*=\s*Predict\(.*?\))',generated_text['generation'])
         text = match.group(1)
-        print(text)
-        self.result_dict[sample['id']]['predicted_programs'].append(text)
+        program_list = [operation.strip() for operation in text.split('\n')][1:]
+
+        print(program_list)
+        self.result_dict[sample['id']]['predicted_programs'].append(program_list)
 
     def batch_generate_programs(self, batch_size=10):
         # create output_dir
