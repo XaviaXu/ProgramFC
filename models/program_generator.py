@@ -4,6 +4,7 @@ import json
 import logging
 from tqdm import tqdm
 
+import re
 from prompts import Prompt_Loader
 from utils import OpenAIModel
 
@@ -37,7 +38,9 @@ class Reasoning_Program_Generator:
     def update_results(self, sample, generated_text):
         #program_list = [operation.strip() for operation in generated_text.split('\n')]
         # programs = [program_list]
-        text=generated_text['generation'].split('\n\n')[0]
+
+        match=re.search(r'([s\S]*?label\s*=\s*Predict\(.*?\))',generated_text['generation'])
+        text = match.group(1)
         print(text)
         self.result_dict[sample['id']]['predicted_programs'].append(text)
 
