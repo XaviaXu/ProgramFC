@@ -8,7 +8,8 @@ import re
 from prompts import Prompt_Loader
 from utils import OpenAIModel
 
-from llama import Llama
+from llama_cpp import Llama
+
 from typing import List
 
 
@@ -24,25 +25,26 @@ class Reasoning_Program_Generator:
         # self.openai_api = OpenAIModel(args.api_key, args.model_name, args.stop_words, args.max_new_tokens)
         self.prompt_loader = Prompt_Loader()
 
-        self.ckpt_dir = args.ckpt_dir
-        self.tokenizer_path = args.tokenizer_path
         self.max_seq_len = args.max_seq_len
         self.max_batch_size = args.max_batch_size
-        self.model = Llama.build(
-            ckpt_dir=self.ckpt_dir,
-            tokenizer_path=self.tokenizer_path,
-            max_seq_len=self.max_seq_len,
-            max_batch_size=self.max_batch_size,
+        self.model = Llama(
+            model_path="/xinyuxu/llama.cpp/models/llama-2-70b/ggml-model-f16.gguf",
+            #max_seq_len=self.max_seq_len,
+            n_batch = self.max_batch_size,
+            n_ctx = self.max_seq_len,
+            n_gpu_layers=-1
         )
 
     def update_results(self, sample, generated_text):
         #program_list = [operation.strip() for operation in generated_text.split('\n')]
         # programs = [program_list]
 
-        match=re.search(r'([\s\S]*?label\s*=\s*Predict\(.*?\))',generated_text['generation'])
+
+        match=re.search(r'([\s\S]*?label\s*=\s*Predict\(.*?\))',generated_text['choices'][0]['text'])
         text = match.group(1)
         program_list = [operation.strip() for operation in text.split('\n')][1:]
 
+        #program_list = generated_text['choices'][0]['text']
         print(program_list)
         self.result_dict[sample['id']]['predicted_programs'].append(program_list)
 
@@ -60,9 +62,9 @@ class Reasoning_Program_Generator:
         print(f"Loaded {len(raw_dataset)} examples from {self.dataset_name} dev set.")
 
         # generate programs
-        temperature = 0.6
-        top_p = 0.9
-        max_gen_len = 2048
+        temperature = 0.8
+        top_p = 0.95
+        max_gen_len = int(512)
 
 
         outputs = []
@@ -88,30 +90,18 @@ class Reasoning_Program_Generator:
                 # create prompt
                 full_prompts = [self.prompt_loader.prompt_construction(example['claim'], self.dataset_name) for example
                                 in chunk]
-                try:
-                    batch_outputs = self.model.text_completion(
-                        full_prompts,
-                        max_gen_len=max_gen_len,
-                        temperature=temperature,
-                        top_p=top_p,
-                    )
-                    # create output
-                    for sample, output in zip(chunk, batch_outputs):
+                for sample, full_prompt in zip(chunk, full_prompts):
+                    try:
+                        output = self.model.create_completion(
+                            prompt=full_prompt,
+                            max_tokens=max_gen_len,
+                            temperature=temperature,
+                            top_p=top_p,
+                         )
                         self.update_results(sample, output)
-                except:
-                    # generate one by one if batch generation fails
-                    for sample, full_prompt in zip(chunk, full_prompts):
-                        try:
-                            output = self.model.text_completion(
-                                full_prompts,
-                                max_gen_len=max_gen_len,
-                                temperature=temperature,
-                                top_p=top_p,
-                            )
-                            self.update_results(sample, output)
-                        except Exception as e:
-                            logging.exception(e)
-                            print('Error in generating reasoning programs for example: ', sample['id'])
+                    except Exception as e:
+                        logging.exception(e)
+                        print('Error in generating reasoning programs for example: ', sample['id'])
 
         print(f"Generated {len(result_dict)} examples.")
         # create outputs
@@ -130,17 +120,17 @@ def parse_args():
     parser = argparse.ArgumentParser()
     # dataset args
     parser.add_argument('--dataset_name', default='HOVER', type=str)
-    parser.add_argument('--data_path',default='./datasets', type=str)
+    parser.add_argument('--data_path',default='/xinyuxu/ProgramFC/datasets', type=str)
     parser.add_argument('--num_eval_samples', default=-1, type=int)
     parser.add_argument('--num_programs_per_example', default=1, type=int)
-    parser.add_argument('--save_path', default='./results/programs', type=str)
+    parser.add_argument('--save_path', default='/xinyuxu/ProgramFC/results/programs', type=str)
     parser.add_argument('--stop_words', type=str, default='# The claim is')
     parser.add_argument('--max_new_tokens', type=int, default=1024)
 
-    parser.add_argument('--ckpt_dir',type=str,default='../llama/llama-2-13b/')
-    parser.add_argument('--tokenizer_path',type=str,default='../llama/tokenizer.model')
+    #parser.add_argument('--ckpt_dir',type=str,default='/xinyuxu/llama/llama-2-13b/')
+    parser.add_argument('--tokenizer_path',type=str,default='/xinyuxu/llama/tokenizer.model')
     parser.add_argument('--max_seq_len',type=int,default=4096)
-    parser.add_argument('--max_batch_size',type=int,default=6)
+    parser.add_argument('--max_batch_size',type=int,default=12)
 
     args = parser.parse_args()
     return args

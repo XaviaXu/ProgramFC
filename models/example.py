@@ -3,8 +3,9 @@
 
 import fire
 
-from llama import Llama
+#from llama import Llama
 from typing import List
+from llama_cpp import Llama
 
 def main(
         ckpt_dir: str,
