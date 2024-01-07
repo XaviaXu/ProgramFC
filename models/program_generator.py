@@ -34,6 +34,7 @@ class Reasoning_Program_Generator:
             n_ctx = self.max_seq_len,
             n_gpu_layers=-1
         )
+        self.num_hops = args.num_hops
 
     def update_results(self, sample, generated_text):
         #program_list = [operation.strip() for operation in generated_text.split('\n')]
@@ -57,6 +58,9 @@ class Reasoning_Program_Generator:
         # load dataset
         with open(os.path.join(self.data_path, self.dataset_name, 'claims', 'dev.json'), 'r') as f:
             raw_dataset = json.load(f)
+        
+        if self.dataset_name=='HOVER':
+            raw_dataset = [d for d in raw_dataset if d['num_hops']==self.num_hops]
 
         raw_dataset = raw_dataset if self.args.num_eval_samples < 0 else raw_dataset[:self.args.num_eval_samples]
         print(f"Loaded {len(raw_dataset)} examples from {self.dataset_name} dev set.")
@@ -111,7 +115,7 @@ class Reasoning_Program_Generator:
 
         # save outputs
         with open(os.path.join(self.save_path,
-                               f'{self.dataset_name}_N={self.num_programs_per_example}_programs.json'),
+                               f'{self.dataset_name}_N={self.num_programs_per_example}_Hops={self.num_hops}_programs.json'),
                   'w') as f:
             json.dump(sorted_outputs, f, indent=2, ensure_ascii=False)
 
@@ -131,6 +135,7 @@ def parse_args():
     parser.add_argument('--tokenizer_path',type=str,default='/xinyuxu/llama/tokenizer.model')
     parser.add_argument('--max_seq_len',type=int,default=4096)
     parser.add_argument('--max_batch_size',type=int,default=12)
+    parser.add_argument('--num_hops',type=int,default=2)
 
     args = parser.parse_args()
     return args
