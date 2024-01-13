@@ -1,3 +1,64 @@
+
+HOVER_DECOMPOSE = ''''Split the given claim by extracting clauses, verbs and other miscellaneous phrases to break it into multiple short sentences, and generate a Python program based on the generated clauses to verify the claim step-by-step. You can call three functions in the program: 1. Question() to answer a question; 2. Verify() to verify a simple claim; 3. Predict() to predict the veracity label. Several examples are given as follows.
+
+# The claim is that Sally Menke was influenced by a cinematographer that wrote M3, M4 and M5 and influenced by M1's editor.
+# Subclause identification: Sally Menke was influenced by (a cinematographer that wrote M3, M4 and M5) and influenced by M1's editor.
+# Verb and other miscellaneous phrases identification: Sally Menke (was influenced by (a cinematographer that (wrote M3, M4 and M5))) and (influenced by M1's editor).
+# Decompose into short sentences: A cinematographer wrote M3, M4 and M5. Sally Menke was influenced by the cinematographer. Sally Menke was influenced by M1's editor.
+# Generate program:
+def program():
+    answer_1 = Question("Which cinematographer wrote M3,M4 and M5?")
+    fact_1 = Verify(f"Sally Menke was influenced by {answer_1}.")
+    fact_2 = Verify("Sally Menke was influenced by M1's editor.")
+    label = Predict(fact_1 and fact_2)
+
+# The claim is that Along with the New York Islanders and the New York Rangers, the New Jersey Devils NFL franchise is popular in the New York metropolitan area.
+# Subclause identification: Along with (the New York Islanders and the New York Rangers), (the New Jersey Devils NFL franchise) is popular in the New York metropolitan area.
+# Verb and other miscellaneous phrases identification: (Along with (the New York Islanders and the New York Rangers)), (the New Jersey Devils NFL franchise) (is popular in the New York metropolitan area).
+# Decompose into short sentences: The New York Islanders is popular in the New York metropolitan area. The New York Rangers is popular in the New York metropolitan area. The New Jersey Devils NFL franchise is popular in the New York metropolitan area.
+# Generate program:
+def program():
+    fact_1 = Verify("The New York Islanders is popular in the New York metropolitan area.")
+    fact_2 = Verify("The New York Rangers is popular in the New York metropolitan area.")
+    fact_3 = Verify("The New Jersey Devils NFL franchise is popular in the New York metropolitan area.")
+    label = Predict(fact_1 and fact_2 and fact_3)
+
+
+# The claim is that Talking Heads, an American rock band that was "one of the most critically acclaimed bands of the 80's" is featured in KSPN's AAA format.
+# Subclause identification: Talking Heads, an American rock band that (was "one of the most critically acclaimed bands of the 80's") is featured in KSPN's AAA format.
+# Verb and other miscellaneous phrases identification: (Talking Heads), an American rock band that (was "one of the most critically acclaimed bands of the 80's") is featured in KSPN's AAA format.
+# Decompose into short sentences: Talking Heads is an American rock band. Talking Heads was 'one of the most critically acclaimed bands of the 80's'. Talking Heads is featured in KSPN's AAA format.
+# Generate program:
+def program():
+    fact_1 = Verify("Talking Heads is an American rock band")
+    fact_2 = Verify("Talking Heads was 'one of the most critically acclaimed bands of the 80's'.")
+    fact_3 = Verify("Talking Heads is featured in KSPN's AAA format.")
+    label = Predict(fact_1 and fact_2 and fact_3)
+
+# The claim is that The song recorded by Fergie that was produced by Polow da Don and was followed by Life Goes On was M.I.L.F.$.
+# Subclause identification: (The song recorded by Fergie) (that was produced by Polow da Don) (and was followed by Life Goes On) (was M.I.L.F.$).
+# Verb and other miscellaneous phrases identification: (The song recorded by Fergie) (that was produced by Polow da Don) (and was followed by Life Goes On) (was M.I.L.F.$).
+# Decompose into short sentences: Fergie recorded M.I.L.F.$. M.I.L.F.$ was produced by Polow da Don. M.I.L.F.$ was followed by Life Goes On. 
+# Generated program:
+def program():
+    fact_1 = Verify("M.I.L.F.$ was recorded by Fergie")
+    fact_2 = Verify("M.I.L.F.$ was produced by Polow da Don.")
+    fact_2 = Verify("M.I.L.F.$ was was followed by Life Goes On.")
+    label = Predict(fact_1 and fact_2 and fact_3)
+
+# The claim is that Eatza Pizza and Your Pie were not founded in the same state.
+# Subclause identification: Eatza Pizza and Your Pie were not founded in the same state.
+# Verb and other miscellaneous phrases identification: Eatza Pizza and Your Pie (were not founded in the same state).
+# Decompose into short sentences: Eatza Pizza was founded in state A. Your Pie was founded in state B. A and B are not the same state.
+# Generated program:
+def program():
+    answer_1 = Question("Which state was Eatza Pizza founded in?")
+    answer_2 = Question("Which state was Your Pie founded in?")
+    fact_1 = Verify(f"{answer_1} and {answer_2} are not the same state.")
+    label = Predict(fact_1)
+
+'''
+
 HOVER_PROGRAM_FC = ''''Generate a python-like program that describes the reasoning steps required to verify the claim step-by-step. You can call three functions in the program: 1. Question() to answer a question; 2. Verify() to verify a simple claim; 3. Predict() to predict the veracity label. Several examples are given as follows.
 
 # The claim is that Howard University Hospital and Providence Hospital are both located in Washington, D.C.
@@ -218,7 +279,7 @@ def program():'''
 
 class Prompt_Loader:
     def __init__(self) -> None:
-        self.hover_program_fc = HOVER_PROGRAM_FC
+        self.hover_program_fc = HOVER_DECOMPOSE
         self.feverous_program_fc = FEVEROUS_PROGRAM_FC
 
     def prompt_construction(self, claim, dataset_name):
