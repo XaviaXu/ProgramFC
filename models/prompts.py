@@ -298,7 +298,7 @@ template_map = {"DEPENDENCY": DEPENDENCY_TEMPLATE, "CONSTITUENCY": CONSTITUENCY_
 
 
 class Prompt_Loader:
-    def __init__(self, parse_type,dataset_name) -> None:
+    def __init__(self, parse_type, dataset_name) -> None:
         self.hover_program_fc = HOVER_PROGRAM_FC
         self.feverous_program_fc = FEVEROUS_PROGRAM_FC
         self.nlp = StanfordCoreNLP(r'/xinyuxu/stanford-corenlp-4.5.5')
@@ -307,7 +307,6 @@ class Prompt_Loader:
         self.parse_type = parse_type
         self.tokenizer = stanza.Pipeline(lang='en', processors='tokenize')
         self.prompt_init(dataset_name)
-
 
     def parsing(self, claim):
         doc = self.tokenizer(claim)
@@ -331,15 +330,17 @@ class Prompt_Loader:
 
         self.prompt = "Generate a python-like program that describes the reasoning steps required to verify the claim step-by-step. " \
                       "The parsing tree of the claim is provided to assist in breaking down the claim and generating programs." \
-                      "You can call three functions in the program: 1. Question() to answer a question; 2. Verify() to verify a simple claim; 3. Predict() to predict the veracity label. Several examples are given as follows."
+                      "You can call three functions in the program: 1. Question() to answer a question; 2. Verify() to verify a simple claim; 3. Predict() to predict the veracity label. Several examples are given as follows.\n"
         claims = re.findall(r'# The claim is that(.*?)\ndef program\(\):(.*?)\n\s*\n', template, re.DOTALL)
+        prompt_list = []
         for claim, program_code in claims:
             parse_tree = self.parsing(claim)
-            self.prompt += self.template.format(claim=claim.strip(),parsing=parse_tree,program=program_code)
-
+            prompt_list.append(self.template.format(claim=claim.strip(), parsing=parse_tree, program=program_code))
+        prompt_list = prompt_list[5:]
+        self.prompt += "\n".join(prompt_list)
         print(self.prompt)
         print("prompt initialized")
 
     def prompt_construction(self, claim):
         parse_tree = self.parsing(claim)
-        return self.prompt + self.template.format(claim=claim.strip(),parsing=parse_tree,program="")
+        return self.prompt + self.template.format(claim=claim.strip(), parsing=parse_tree, program="")

@@ -69,7 +69,7 @@ class Reasoning_Program_Generator:
         # generate programs
         temperature = 0.8
         top_p = 0.95
-        max_gen_len = int(-1)
+        max_gen_len = int(256)
 
 
         outputs = []
@@ -135,7 +135,7 @@ def parse_args():
 
     #parser.add_argument('--ckpt_dir',type=str,default='/xinyuxu/llama/llama-2-13b/')
     parser.add_argument('--tokenizer_path',type=str,default='/xinyuxu/llama/tokenizer.model')
-    parser.add_argument('--max_seq_len',type=int,default=8192)
+    parser.add_argument('--max_seq_len',type=int,default=4096)
     parser.add_argument('--max_batch_size',type=int,default=12)
     parser.add_argument('--num_hops',type=int,default=2)
 
