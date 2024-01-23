@@ -68,7 +68,7 @@ class Reasoning_Program_Generator:
         # generate programs
         temperature = 0.8
         top_p = 0.95
-        max_gen_len = int(512)
+        max_gen_len = int(256)
 
 
         outputs = []
@@ -115,7 +115,7 @@ class Reasoning_Program_Generator:
 
         # save outputs
         with open(os.path.join(self.save_path,
-                               f'{self.dataset_name}_N={self.num_programs_per_example}_Hops={self.num_hops}_programs.json'),
+                               f'AUG_{self.dataset_name}_N={self.num_programs_per_example}_Hops={self.num_hops}_programs.json'),
                   'w') as f:
             json.dump(sorted_outputs, f, indent=2, ensure_ascii=False)
 

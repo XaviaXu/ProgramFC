@@ -57,7 +57,8 @@ def program():
     fact_1 = Verify(f"{answer_1} and {answer_2} are not the same state.")
     label = Predict(fact_1)
 
-'''
+# The claim is that [[CLAIM]]
+# Subclause identification:'''
 
 HOVER_PROGRAM_FC = ''''Generate a python-like program that describes the reasoning steps required to verify the claim step-by-step. You can call three functions in the program: 1. Question() to answer a question; 2. Verify() to verify a simple claim; 3. Predict() to predict the veracity label. Several examples are given as follows.
 
@@ -279,7 +280,7 @@ def program():'''
 
 class Prompt_Loader:
     def __init__(self) -> None:
-        self.hover_program_fc = HOVER_DECOMPOSE
+        self.hover_program_fc = HOVER_PROGRAM_FC
         self.feverous_program_fc = FEVEROUS_PROGRAM_FC
 
     def prompt_construction(self, claim, dataset_name):
