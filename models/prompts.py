@@ -1,5 +1,6 @@
 import re
 from stanfordcorenlp import StanfordCoreNLP
+import stanza
 
 HOVER_DECOMPOSE = ''''Split the given claim by extracting clauses, verbs and other miscellaneous phrases to break it into multiple short sentences, and generate a Python program based on the generated clauses to verify the claim step-by-step. You can call three functions in the program: 1. Question() to answer a question; 2. Verify() to verify a simple claim; 3. Predict() to predict the veracity label. Several examples are given as follows.
 
@@ -282,14 +283,14 @@ def program():'''
 DEPENDENCY_TEMPLATE = '''
 # The claim is that {claim}
 Dependency parsing of the claim:
-{parsing}{program}
+{parsing}def program():{program}
 
 '''
 
 CONSTITUENCY_TEMPLATE = '''
 # The claim is that {claim}
 Constituency parsing of the claim:
-{parsing}{program}
+{parsing}def program():{program}
 
 '''
 
@@ -304,17 +305,19 @@ class Prompt_Loader:
         self.prompt = ""
         self.template = template_map[parse_type]
         self.parse_type = parse_type
+        self.tokenizer = stanza.Pipeline(lang='en', processors='tokenize')
         self.prompt_init(dataset_name)
 
+
     def parsing(self, claim):
-        sentences = claim.split(".")
+        doc = self.tokenizer(claim)
         analysis = ""
         if self.parse_type == "DEPENDENCY":
-            for sentence in sentences:
-                analysis += f"{self.nlp.dependency_parse(sentence)}\n"
+            for sentence in doc.sentences:
+                analysis += f"{self.nlp.dependency_parse(sentence.text)}\n"
         elif self.parse_type == "CONSTITUENCY":
-            for sentence in sentences:
-                analysis += f"{self.nlp.parse(sentence)}\n"
+            for sentence in doc.sentences:
+                analysis += f"{self.nlp.parse(sentence.text)}\n"
         return analysis
 
     def prompt_init(self, dataset_name):
@@ -326,8 +329,10 @@ class Prompt_Loader:
         else:
             raise NotImplementedError
 
-        self.prompt = ""
-        claims = re.findall(r'# The claim is that(.*?)\n(.*?)\n\n', template, re.DOTALL)
+        self.prompt = "Generate a python-like program that describes the reasoning steps required to verify the claim step-by-step. " \
+                      "The parsing tree of the claim is provided to assist in breaking down the claim and generating programs." \
+                      "You can call three functions in the program: 1. Question() to answer a question; 2. Verify() to verify a simple claim; 3. Predict() to predict the veracity label. Several examples are given as follows."
+        claims = re.findall(r'# The claim is that(.*?)\ndef program\(\):(.*?)\n\s*\n', template, re.DOTALL)
         for claim, program_code in claims:
             parse_tree = self.parsing(claim)
             self.prompt += self.template.format(claim=claim.strip,parsing=parse_tree,program=program_code)
@@ -337,4 +342,4 @@ class Prompt_Loader:
 
     def prompt_construction(self, claim):
         parse_tree = self.parsing(claim)
-        return self.prompt + self.template.format(claim=claim.strip,parsing=parse_tree,program="def program():\n")
+        return self.prompt + self.template.format(claim=claim.strip,parsing=parse_tree,program="")
