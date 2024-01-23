@@ -41,13 +41,13 @@ class Reasoning_Program_Generator:
         #program_list = [operation.strip() for operation in generated_text.split('\n')]
         # programs = [program_list]
 
-
+        print(generated_text)
         match=re.search(r'([\s\S]*?label\s*=\s*Predict\(.*?\))',generated_text['choices'][0]['text'])
         text = match.group(1)
         program_list = [operation.strip() for operation in text.split('\n')][1:]
 
         #program_list = generated_text['choices'][0]['text']
-        print(program_list)
+        #print(generated_text)
         self.result_dict[sample['id']]['predicted_programs'].append(program_list)
 
     def batch_generate_programs(self, batch_size=10):
@@ -69,7 +69,7 @@ class Reasoning_Program_Generator:
         # generate programs
         temperature = 0.8
         top_p = 0.95
-        max_gen_len = int(256)
+        max_gen_len = int(-1)
 
 
         outputs = []
@@ -135,7 +135,7 @@ def parse_args():
 
     #parser.add_argument('--ckpt_dir',type=str,default='/xinyuxu/llama/llama-2-13b/')
     parser.add_argument('--tokenizer_path',type=str,default='/xinyuxu/llama/tokenizer.model')
-    parser.add_argument('--max_seq_len',type=int,default=4096)
+    parser.add_argument('--max_seq_len',type=int,default=8192)
     parser.add_argument('--max_batch_size',type=int,default=12)
     parser.add_argument('--num_hops',type=int,default=2)
 

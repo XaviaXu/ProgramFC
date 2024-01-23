@@ -335,11 +335,11 @@ class Prompt_Loader:
         claims = re.findall(r'# The claim is that(.*?)\ndef program\(\):(.*?)\n\s*\n', template, re.DOTALL)
         for claim, program_code in claims:
             parse_tree = self.parsing(claim)
-            self.prompt += self.template.format(claim=claim.strip,parsing=parse_tree,program=program_code)
+            self.prompt += self.template.format(claim=claim.strip(),parsing=parse_tree,program=program_code)
 
         print(self.prompt)
         print("prompt initialized")
 
     def prompt_construction(self, claim):
         parse_tree = self.parsing(claim)
-        return self.prompt + self.template.format(claim=claim.strip,parsing=parse_tree,program="")
+        return self.prompt + self.template.format(claim=claim.strip(),parsing=parse_tree,program="")
