@@ -21,9 +21,10 @@ class Reasoning_Program_Generator:
         # self.model_name = args.model_name
         self.save_path = args.save_path
         self.num_programs_per_example = args.num_programs_per_example
+        self.parse_type = args.parse_type
 
         # self.openai_api = OpenAIModel(args.api_key, args.model_name, args.stop_words, args.max_new_tokens)
-        self.prompt_loader = Prompt_Loader()
+        self.prompt_loader = Prompt_Loader(args.parse_type,args.dataset_name)
 
         self.max_seq_len = args.max_seq_len
         self.max_batch_size = args.max_batch_size
@@ -92,7 +93,7 @@ class Reasoning_Program_Generator:
             # for each chunk
             for chunk in tqdm(dataset_chunks):
                 # create prompt
-                full_prompts = [self.prompt_loader.prompt_construction(example['claim'], self.dataset_name) for example
+                full_prompts = [self.prompt_loader.prompt_construction(example['claim']) for example
                                 in chunk]
                 for sample, full_prompt in zip(chunk, full_prompts):
                     try:
@@ -115,7 +116,7 @@ class Reasoning_Program_Generator:
 
         # save outputs
         with open(os.path.join(self.save_path,
-                               f'AUG_{self.dataset_name}_N={self.num_programs_per_example}_Hops={self.num_hops}_programs.json'),
+                               f'{self.parse_type}_{self.dataset_name}_N={self.num_programs_per_example}_Hops={self.num_hops}_programs.json'),
                   'w') as f:
             json.dump(sorted_outputs, f, indent=2, ensure_ascii=False)
 
@@ -130,6 +131,7 @@ def parse_args():
     parser.add_argument('--save_path', default='/xinyuxu/ProgramFC/results/programs', type=str)
     parser.add_argument('--stop_words', type=str, default='# The claim is')
     parser.add_argument('--max_new_tokens', type=int, default=1024)
+    parser.add_argument('--parse_type',type=str,default="CONSTITUENCY")
 
     #parser.add_argument('--ckpt_dir',type=str,default='/xinyuxu/llama/llama-2-13b/')
     parser.add_argument('--tokenizer_path',type=str,default='/xinyuxu/llama/tokenizer.model')

@@ -1,3 +1,5 @@
+import re
+from stanfordcorenlp import StanfordCoreNLP
 
 HOVER_DECOMPOSE = ''''Split the given claim by extracting clauses, verbs and other miscellaneous phrases to break it into multiple short sentences, and generate a Python program based on the generated clauses to verify the claim step-by-step. You can call three functions in the program: 1. Question() to answer a question; 2. Verify() to verify a simple claim; 3. Predict() to predict the veracity label. Several examples are given as follows.
 
@@ -16,9 +18,9 @@ def program():
 # Subclause identification: Along with (the New York Islanders and the New York Rangers), (the New Jersey Devils NFL franchise) is popular in the New York metropolitan area.
 # Verb and other miscellaneous phrases identification: (Along with (the New York Islanders and the New York Rangers)), (the New Jersey Devils NFL franchise) (is popular in the New York metropolitan area).
 # Decompose into short sentences: The New York Islanders is popular in the New York metropolitan area. The New York Rangers is popular in the New York metropolitan area. The New Jersey Devils NFL franchise is popular in the New York metropolitan area.
-# Generate program:
+# Generate program: 
 def program():
-    fact_1 = Verify("The New York Islanders is popular in the New York metropolitan area.")
+    fact_1 = Verify("The New York Islanders is popular in the New York metropolita n area.")
     fact_2 = Verify("The New York Rangers is popular in the New York metropolitan area.")
     fact_3 = Verify("The New Jersey Devils NFL franchise is popular in the New York metropolitan area.")
     label = Predict(fact_1 and fact_2 and fact_3)
@@ -277,13 +279,45 @@ def program():
 # The claim is that [[CLAIM]]
 def program():'''
 
+DEPENDENCY_TEMPLATE = '''
+# The claim is that {claim}
+Dependency parsing of the claim:
+{parsing}{program}
+
+'''
+
+CONSTITUENCY_TEMPLATE = '''
+# The claim is that {claim}
+Constituency parsing of the claim:
+{parsing}{program}
+
+'''
+
+template_map = {"DEPENDENCY": DEPENDENCY_TEMPLATE, "CONSTITUENCY": CONSTITUENCY_TEMPLATE}
+
 
 class Prompt_Loader:
-    def __init__(self) -> None:
+    def __init__(self, parse_type,dataset_name) -> None:
         self.hover_program_fc = HOVER_PROGRAM_FC
         self.feverous_program_fc = FEVEROUS_PROGRAM_FC
+        self.nlp = StanfordCoreNLP(r'/xinyuxu/stanford-corenlp-4.5.5')
+        self.prompt = ""
+        self.template = template_map[parse_type]
+        self.parse_type = parse_type
+        self.prompt_init(dataset_name)
 
-    def prompt_construction(self, claim, dataset_name):
+    def parsing(self, claim):
+        sentences = claim.split(".")
+        analysis = ""
+        if self.parse_type == "DEPENDENCY":
+            for sentence in sentences:
+                analysis += f"{self.nlp.dependency_parse(sentence)}\n"
+        elif self.parse_type == "CONSTITUENCY":
+            for sentence in sentences:
+                analysis += f"{self.nlp.parse(sentence)}\n"
+        return analysis
+
+    def prompt_init(self, dataset_name):
         template = None
         if dataset_name == 'HOVER':
             template = self.hover_program_fc
@@ -291,5 +325,16 @@ class Prompt_Loader:
             template = self.feverous_program_fc
         else:
             raise NotImplementedError
-        
-        return template.replace('[[CLAIM]]', claim)
+
+        self.prompt = ""
+        claims = re.findall(r'# The claim is that(.*?)\n(.*?)\n\n', template, re.DOTALL)
+        for claim, program_code in claims:
+            parse_tree = self.parsing(claim)
+            self.prompt += self.template.format(claim=claim.strip,parsing=parse_tree,program=program_code)
+
+        print(self.prompt)
+        print("prompt initialized")
+
+    def prompt_construction(self, claim):
+        parse_tree = self.parsing(claim)
+        return self.prompt + self.template.format(claim=claim.strip,parsing=parse_tree,program="def program():\n")
