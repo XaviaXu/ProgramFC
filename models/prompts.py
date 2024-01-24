@@ -65,12 +65,6 @@ def program():
 
 HOVER_PROGRAM_FC = ''''Generate a python-like program that describes the reasoning steps required to verify the claim step-by-step. You can call three functions in the program: 1. Question() to answer a question; 2. Verify() to verify a simple claim; 3. Predict() to predict the veracity label. Several examples are given as follows.
 
-# The claim is that Howard University Hospital and Providence Hospital are both located in Washington, D.C.
-def program():
-    fact_1 = Verify("Howard University Hospital is located in Washington, D.C.")
-    fact_2 = Verify("Providence Hospital is located in Washington, D.C.")
-    label = Predict(fact_1 and fact_2)
-
 # The claim is that WWE Super Tuesday took place at an arena that currently goes by the name TD Garden.
 def program():
     answer_1 = Question("Which arena the WWE Super Tuesday took place?")
@@ -138,44 +132,11 @@ def program():
     fact_2 = Verify("M.I.L.F.$ was was followed by Life Goes On.")
     label = Predict(fact_1 and fact_2)
 
-# The claim is that Eatza Pizza and Your Pie were not founded in the same state.
-def program():
-    answer_1 = Question("Which state was Eatza Pizza founded in?")
-    answer_2 = Question("Which state was Your Pie founded in?")
-    fact_1 = Verify(f"{answer_1} and {answer_2} are not the same state.")
-    label = Predict(fact_1)
-
-# The claim is that Gregg Rolie and Rob Tyner, are not a keyboardist.
-def program():
-    fact_1 = Verify("Gregg Rolie is not a keyboardist.")
-    fact_2 = Verify("Rob Tyner is not a keyboardist.")
-    label = Predict(fact_1 and fact_2)
-    
 # The claim is that Maria Esther Andion Bueno, not Jimmy Connors, is the player that is from Brazil.
 def program():
     fact_1 = Verify("Maria Esther Andion Bueno is from Brazil.")
     fact_2 = Verify("Jimmy Connors is not from Brazil.")
     label = Predict(fact_1 and fact_2)
-    
-# The claim is that Vladimir Igorevich Arnold died after Georg Cantor.
-def program():
-    answer_1 = Question("When did Vladimir Igorevich Arnold die?")
-    answer_2 = Question("When did Georg Cantor die?")
-    fact_1 = Verify(f"{answer_1} is after {answer_2}.")
-    label = Predict(fact_1)
-
-# The claim is that Barton Mine was halted by a natural disaster not Camlaren Mine.
-def program():
-    fact_1 = Verify("Barton Mine was halted by a natural disaster.")
-    fact_2 = Verify("Camlaren Mine was not halted by a natural disaster.")
-    label = Predict(fact_1 and fact_2)
-    
-# The claim is that John O'Hara and Rabindranath Tagore are not the same nationality.
-def program():
-    answer_1 = Question("What is the nationality of John O'Hara?")
-    answer_2 = Question("What is the nationality of Rabindranath Tagore?")
-    fact_1 = Verify(f"{answer_1} and {answer_2} are not the same nationality.")
-    label = Predict(fact_1)
     
 # The claim is that Thomas Loren Friedman has won more Pulitzer Prizes than Colson Whitehead.
 def program():
@@ -194,6 +155,47 @@ def program():
     
 # The claim is that [[CLAIM]]
 def program():'''
+
+DELETED_HOVER='''
+# The claim is that Howard University Hospital and Providence Hospital are both located in Washington, D.C.
+def program():
+    fact_1 = Verify("Howard University Hospital is located in Washington, D.C.")
+    fact_2 = Verify("Providence Hospital is located in Washington, D.C.")
+    label = Predict(fact_1 and fact_2)
+    
+# The claim is that Vladimir Igorevich Arnold died after Georg Cantor.
+def program():
+    answer_1 = Question("When did Vladimir Igorevich Arnold die?")
+    answer_2 = Question("When did Georg Cantor die?")
+    fact_1 = Verify(f"{answer_1} is after {answer_2}.")
+    label = Predict(fact_1)
+    
+# The claim is that Barton Mine was halted by a natural disaster not Camlaren Mine.
+def program():
+    fact_1 = Verify("Barton Mine was halted by a natural disaster.")
+    fact_2 = Verify("Camlaren Mine was not halted by a natural disaster.")
+    label = Predict(fact_1 and fact_2)
+    
+# The claim is that Eatza Pizza and Your Pie were not founded in the same state.
+def program():
+    answer_1 = Question("Which state was Eatza Pizza founded in?")
+    answer_2 = Question("Which state was Your Pie founded in?")
+    fact_1 = Verify(f"{answer_1} and {answer_2} are not the same state.")
+    label = Predict(fact_1)
+
+# The claim is that Gregg Rolie and Rob Tyner, are not a keyboardist.
+def program():
+    fact_1 = Verify("Gregg Rolie is not a keyboardist.")
+    fact_2 = Verify("Rob Tyner is not a keyboardist.")
+    label = Predict(fact_1 and fact_2)
+    
+# The claim is that John O'Hara and Rabindranath Tagore are not the same nationality.
+def program():
+    answer_1 = Question("What is the nationality of John O'Hara?")
+    answer_2 = Question("What is the nationality of Rabindranath Tagore?")
+    fact_1 = Verify(f"{answer_1} and {answer_2} are not the same nationality.")
+    label = Predict(fact_1)
+'''
 
 FEVEROUS_PROGRAM_FC = '''Generate a python-like program that describes the reasoning steps required to verify the claim step-by-step. You can call three functions in the program: 1. Question() to answer a question; 2. Verify() to verify a simple claim; 3. Predict() to predict the veracity label. Several examples are given as follows.
 
