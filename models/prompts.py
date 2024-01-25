@@ -283,18 +283,16 @@ def program():
 def program():'''
 
 DEPENDENCY_TEMPLATE = '''
+
 # The claim is that {claim}
 Dependency parsing of the claim:
-{parsing}def program():{program}
-
-'''
+{parsing}def program():{program}'''
 
 CONSTITUENCY_TEMPLATE = '''
+
 # The claim is that {claim}
 Constituency parsing of the claim:
-{parsing}def program():{program}
-
-'''
+{parsing}def program():{program}'''
 
 template_map = {"DEPENDENCY": DEPENDENCY_TEMPLATE, "CONSTITUENCY": CONSTITUENCY_TEMPLATE}
 
@@ -337,10 +335,10 @@ class Prompt_Loader:
         prompt_list = []
         for claim, program_code in claims:
             parse_tree = self.parsing(claim)
-            prompt_list.append(self.template.format(claim=claim.strip(), parsing=parse_tree, program=program_code))
-        prompt_list = prompt_list[5:]
+            prompt_list.append(self.template.format(claim=claim.strip(), parsing=parse_tree, program=program_code+"\n"))
+        prompt_list = prompt_list[1:-1]
         self.prompt += "\n".join(prompt_list)
-        print(self.prompt)
+        #print(self.prompt)
         print("prompt initialized")
 
     def prompt_construction(self, claim):

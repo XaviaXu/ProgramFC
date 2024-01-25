@@ -69,7 +69,7 @@ class Reasoning_Program_Generator:
         # generate programs
         temperature = 0.8
         top_p = 0.95
-        max_gen_len = int(256)
+        max_gen_len = int(128)
 
 
         outputs = []
@@ -95,6 +95,7 @@ class Reasoning_Program_Generator:
                 # create prompt
                 full_prompts = [self.prompt_loader.prompt_construction(example['claim']) for example
                                 in chunk]
+                #print(full_prompts)
                 for sample, full_prompt in zip(chunk, full_prompts):
                     try:
                         output = self.model.create_completion(
