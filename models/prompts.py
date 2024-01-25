@@ -1,4 +1,6 @@
 import re
+
+import amrlib
 from stanfordcorenlp import StanfordCoreNLP
 import stanza
 
@@ -71,6 +73,30 @@ def program():
     fact_1 = Verify(f"{answer_1} currently goes by the name TD Garden.")
     label = Predict(fact_1)
 
+# The claim is that Jack McFarland is the best known role of the host of the 64th Annual Tony Awards.
+def program():
+    answer_1 = Question("Who is the host of the 64th Annual Tony Awards?")
+    fact_1 = Verify(f\"Jack McFarland is the best known role of {answer_1}.)
+    label = Predict(fact_1)
+
+# The claim is that Blackstar is the name of the album released by David Bowie that was recorded in secret.
+def program():
+    fact_1 = Verify("David Bowie released an album called Blackstar.")
+    fact_2 = Verify("David Bowie recorded an album in secret.")
+    label = Predict(fact_1 and fact_2)
+
+# The claim is that Maria Esther Andion Bueno, not Jimmy Connors, is the player that is from Brazil.
+def program():
+    fact_1 = Verify("Maria Esther Andion Bueno is from Brazil.")
+    fact_2 = Verify("Jimmy Connors is not from Brazil.")
+    label = Predict(fact_1 and fact_2)
+    
+# The claim is that The song recorded by Fergie that was produced by Polow da Don and was followed by Life Goes On was M.I.L.F.$.
+def program():
+    fact_1 = Verify("M.I.L.F.$ was recorded by Fergie that was produced by Polow da Don.")
+    fact_2 = Verify("M.I.L.F.$ was was followed by Life Goes On.")
+    label = Predict(fact_1 and fact_2)
+
 # The claim is that Talking Heads, an American rock band that was "one of the most critically acclaimed bands of the 80's" is featured in KSPN's AAA format.
 def program():
     fact_1 = Verify("Talking Heads is an American rock band that was 'one of the most critically acclaimed bands of the 80's'.")
@@ -81,12 +107,6 @@ def program():
 def program():
     answer_1 = Question("Which Formula 1 car was designed by Peter McCool during the 2007 Formula One season?")
     fact_1 = Verify(f"An IndyCar race driver drove the car {answer_1}.")
-    label = Predict(fact_1)
-    
-# The claim is that Gina Bramhill was born in a village. The 2011 population of the area that includes this village was 167,446.
-def program():
-    answer_1 = Question("Which village was Gina Bramhill born in?")
-    fact_1 = Verify(f"The 2011 population of the area that includes {answer_1} was 167,446.")
     label = Predict(fact_1)
     
 # The claim is that Don Ashley Turlington graduated from Saint Joseph's College, a private Catholic liberal arts college in Standish.
@@ -102,11 +122,11 @@ def program():
     fact_1 = Verify(f"{answer_1} and {answer_2} are not the same country.")
     label = Predict(fact_1)
 
-# The claim is that Blackstar is the name of the album released by David Bowie that was recorded in secret.
+# The claim is that Gina Bramhill was born in a village. The 2011 population of the area that includes this village was 167,446.
 def program():
-    fact_1 = Verify("David Bowie released an album called Blackstar.")
-    fact_2 = Verify("David Bowie recorded an album in secret.")
-    label = Predict(fact_1 and fact_2)
+    answer_1 = Question("Which village was Gina Bramhill born in?")
+    fact_1 = Verify(f"The 2011 population of the area that includes {answer_1} was 167,446.")
+    label = Predict(fact_1)
     
 # The claim is that In the 2004 Hockey film produced by a former major league baseball pitcher Kurt Russell played the USA coach.
 def program():
@@ -118,24 +138,6 @@ def program():
 def program():
     fact_1 = Verify("The New York Islanders and the New York Rangers are popular in the New York metropolitan area.")
     fact_2 = Verify("The New Jersey Devils NFL franchise is popular in the New York metropolitan area.")
-    label = Predict(fact_1 and fact_2)
-    
-# The claim is that Jack McFarland is the best known role of the host of the 64th Annual Tony Awards.
-def program():
-    answer_1 = Question("Who is the host of the 64th Annual Tony Awards?")
-    fact_1 = Verify(f\"Jack McFarland is the best known role of {answer_1}.)
-    label = Predict(fact_1)
-    
-# The claim is that The song recorded by Fergie that was produced by Polow da Don and was followed by Life Goes On was M.I.L.F.$.
-def program():
-    fact_1 = Verify("M.I.L.F.$ was recorded by Fergie that was produced by Polow da Don.")
-    fact_2 = Verify("M.I.L.F.$ was was followed by Life Goes On.")
-    label = Predict(fact_1 and fact_2)
-
-# The claim is that Maria Esther Andion Bueno, not Jimmy Connors, is the player that is from Brazil.
-def program():
-    fact_1 = Verify("Maria Esther Andion Bueno is from Brazil.")
-    fact_2 = Verify("Jimmy Connors is not from Brazil.")
     label = Predict(fact_1 and fact_2)
     
 # The claim is that Thomas Loren Friedman has won more Pulitzer Prizes than Colson Whitehead.
@@ -153,10 +155,12 @@ def program():
     fact_2 = Verify(f"{answer_2} drives the model of car Trevor Bayne drives in the NASCAR Sprint Cup.")
     label = predict(fact_1 and fact_2)
     
-# The claim is that [[CLAIM]]
-def program():'''
+# The claim is that Barton Mine was halted by a natural disaster not Camlaren Mine.
+def program():
+    fact_1 = Verify("Barton Mine was halted by a natural disaster.")
+    fact_2 = Verify("Camlaren Mine was not halted by a natural disaster.")
+    label = Predict(fact_1 and fact_2)
 
-DELETED_HOVER='''
 # The claim is that Howard University Hospital and Providence Hospital are both located in Washington, D.C.
 def program():
     fact_1 = Verify("Howard University Hospital is located in Washington, D.C.")
@@ -169,12 +173,6 @@ def program():
     answer_2 = Question("When did Georg Cantor die?")
     fact_1 = Verify(f"{answer_1} is after {answer_2}.")
     label = Predict(fact_1)
-    
-# The claim is that Barton Mine was halted by a natural disaster not Camlaren Mine.
-def program():
-    fact_1 = Verify("Barton Mine was halted by a natural disaster.")
-    fact_2 = Verify("Camlaren Mine was not halted by a natural disaster.")
-    label = Predict(fact_1 and fact_2)
     
 # The claim is that Eatza Pizza and Your Pie were not founded in the same state.
 def program():
@@ -195,6 +193,12 @@ def program():
     answer_2 = Question("What is the nationality of Rabindranath Tagore?")
     fact_1 = Verify(f"{answer_1} and {answer_2} are not the same nationality.")
     label = Predict(fact_1)
+    
+# The claim is that [[CLAIM]]
+def program():'''
+
+DELETED_HOVER = '''
+
 '''
 
 FEVEROUS_PROGRAM_FC = '''Generate a python-like program that describes the reasoning steps required to verify the claim step-by-step. You can call three functions in the program: 1. Question() to answer a question; 2. Verify() to verify a simple claim; 3. Predict() to predict the veracity label. Several examples are given as follows.
@@ -294,7 +298,13 @@ CONSTITUENCY_TEMPLATE = '''
 Constituency parsing of the claim:
 {parsing}def program():{program}'''
 
-template_map = {"DEPENDENCY": DEPENDENCY_TEMPLATE, "CONSTITUENCY": CONSTITUENCY_TEMPLATE}
+AMR_TEMPLATE = '''
+# The claim is that {claim}
+Abstract meaning representation of the claim:
+{parsing}
+def program():{program}'''
+
+template_map = {"DEPENDENCY": DEPENDENCY_TEMPLATE, "CONSTITUENCY": CONSTITUENCY_TEMPLATE, "AMR": AMR_TEMPLATE}
 
 
 class Prompt_Loader:
@@ -302,10 +312,12 @@ class Prompt_Loader:
         self.hover_program_fc = HOVER_PROGRAM_FC
         self.feverous_program_fc = FEVEROUS_PROGRAM_FC
         self.nlp = StanfordCoreNLP(r'/xinyuxu/stanford-corenlp-4.5.5')
-        self.prompt = ""
+        self.prompt_list = []
         self.template = template_map[parse_type]
         self.parse_type = parse_type
         self.tokenizer = stanza.Pipeline(lang='en', processors='tokenize')
+        self.amr = amrlib.load_stog_model()
+
         self.prompt_init(dataset_name)
 
     def parsing(self, claim):
@@ -317,6 +329,14 @@ class Prompt_Loader:
         elif self.parse_type == "CONSTITUENCY":
             for sentence in doc.sentences:
                 analysis += f"{self.nlp.parse(sentence.text)}\n"
+        elif self.parse_type == "AMR":
+            graphs = self.amr.parse_sents([sentence.text for sentence in doc.sentences])
+            for graph in graphs:
+                amr_lines = graph.replace(' ' * 6, '\t').split('\n')
+                amr_structure = '\n'.join(
+                    [re.sub(r'(?<!\t) ', '', line) for line in amr_lines if not line.startswith('# ::snt')])
+                analysis += amr_structure
+            # print(analysis)
         return analysis
 
     def prompt_init(self, dataset_name):
@@ -328,19 +348,30 @@ class Prompt_Loader:
         else:
             raise NotImplementedError
 
-        self.prompt = "Generate a python-like program that describes the reasoning steps required to verify the claim step-by-step. " \
-                      "The parsing tree of the claim is provided to assist in breaking down the claim and generating programs." \
-                      "You can call three functions in the program: 1. Question() to answer a question; 2. Verify() to verify a simple claim; 3. Predict() to predict the veracity label. Several examples are given as follows.\n"
+        self.prompt_list.append(
+            "Generate a python-like program that describes the reasoning steps required to verify the claim step-by-step. "
+            "The parsing tree of the claim is provided to assist in breaking down the claim and generating programs."
+            "You can call three functions in the program: 1. Question() to answer a question; 2. Verify() to verify a simple claim; 3. Predict() to predict the veracity label. Several examples are given as follows.\n")
         claims = re.findall(r'# The claim is that(.*?)\ndef program\(\):(.*?)\n\s*\n', template, re.DOTALL)
-        prompt_list = []
+        cnt = 0
         for claim, program_code in claims:
+            if self.parse_type == 'AMR' and cnt >= 14:
+                break
             parse_tree = self.parsing(claim)
-            prompt_list.append(self.template.format(claim=claim.strip(), parsing=parse_tree, program=program_code+"\n"))
-        prompt_list = prompt_list[1:-1]
-        self.prompt += "\n".join(prompt_list)
-        #print(self.prompt)
+            self.prompt_list.append(
+                self.template.format(claim=claim.strip(), parsing=parse_tree, program=program_code + "\n"))
+            cnt += 1
         print("prompt initialized")
 
     def prompt_construction(self, claim):
         parse_tree = self.parsing(claim)
-        return self.prompt + self.template.format(claim=claim.strip(), parsing=parse_tree, program="")
+        temp = self.template.format(claim=claim.strip(), parsing=parse_tree, program="")
+        cnt = 0
+        length_sum = sum(len(string) for string in self.prompt_list)
+        while length_sum + len(temp) > 8192:
+            cnt -= 1
+            length_sum -= len(self.prompt_list[cnt])
+        if cnt == 0:
+            return "\n".join(self.prompt_list) + temp
+        else:
+            return "\n".join(self.prompt_list[:cnt]) + temp
