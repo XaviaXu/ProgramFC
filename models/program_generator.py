@@ -32,7 +32,7 @@ class Reasoning_Program_Generator:
             model_path="/xinyuxu/llama.cpp/models/llama-2-70b/ggml-model-f16.gguf",
             #max_seq_len=self.max_seq_len,
             n_batch = self.max_batch_size,
-            n_ctx = self.max_seq_len,
+            n_ctx = 8192,
             n_gpu_layers=-1
         )
         self.num_hops = args.num_hops
@@ -136,8 +136,8 @@ def parse_args():
 
     #parser.add_argument('--ckpt_dir',type=str,default='/xinyuxu/llama/llama-2-13b/')
     parser.add_argument('--tokenizer_path',type=str,default='/xinyuxu/llama/tokenizer.model')
-    parser.add_argument('--max_seq_len',type=int,default=4096)
-    parser.add_argument('--max_batch_size',type=int,default=12)
+    parser.add_argument('--max_seq_len',type=int,default=8192)
+    parser.add_argument('--max_batch_size',type=int,default=512)
     parser.add_argument('--num_hops',type=int,default=2)
 
     args = parser.parse_args()
