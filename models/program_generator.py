@@ -6,12 +6,13 @@ from tqdm import tqdm
 
 import re
 from prompts import Prompt_Loader
-from utils import OpenAIModel
+from transformers import AutoModelForCausalLM,AutoTokenizer
 
 from llama_cpp import Llama
 
 from typing import List
 
+model_id = "mistralai/Mixtral-8x7B-v0.1"
 
 class Reasoning_Program_Generator:
     def __init__(self, args):
@@ -28,13 +29,8 @@ class Reasoning_Program_Generator:
 
         self.max_seq_len = args.max_seq_len
         self.max_batch_size = args.max_batch_size
-        self.model = Llama(
-            model_path="/xinyuxu/llama.cpp/models/llama-2-70b/ggml-model-f16.gguf",
-            #max_seq_len=self.max_seq_len,
-            n_batch = self.max_batch_size,
-            n_ctx = 8192,
-            n_gpu_layers=-1
-        )
+        self.tokenizer = AutoTokenizer.from_pretrained(model_id)
+        self.model = AutoModelForCausalLM.from_pretrained(model_id)
         self.num_hops = args.num_hops
 
     def update_results(self, sample, generated_text):
@@ -42,7 +38,7 @@ class Reasoning_Program_Generator:
         # programs = [program_list]
 
         print(generated_text)
-        match=re.search(r'([\s\S]*?label\s*=\s*Predict\(.*?\))',generated_text['choices'][0]['text'])
+        match=re.search(r'([\s\S]*?label\s*=\s*Predict\(.*?\))',generated_text)
         text = match.group(1)
         program_list = [operation.strip() for operation in text.split('\n')][1:]
 
@@ -98,13 +94,9 @@ class Reasoning_Program_Generator:
                 #print(full_prompts)
                 for sample, full_prompt in zip(chunk, full_prompts):
                     try:
-                        output = self.model.create_completion(
-                            prompt=full_prompt,
-                            max_tokens=max_gen_len,
-                            temperature=temperature,
-                            top_p=top_p,
-                         )
-                        self.update_results(sample, output)
+                        inputs = self.tokenizer(full_prompt,return_tensors="pt")
+                        outputs = self.model.generate(**inputs,max_new_tokens=max_gen_len)
+                        self.update_results(sample, self.tokenizer.decode(outputs[0], skip_special_tokens=True))
                     except Exception as e:
                         logging.exception(e)
                         print('Error in generating reasoning programs for example: ', sample['id'])
@@ -117,7 +109,7 @@ class Reasoning_Program_Generator:
 
         # save outputs
         with open(os.path.join(self.save_path,
-                               f'{self.parse_type}_{self.dataset_name}_N={self.num_programs_per_example}_Hops={self.num_hops}_programs.json'),
+                               f'Mixtral_{self.parse_type}_{self.dataset_name}_N={self.num_programs_per_example}_Hops={self.num_hops}_programs.json'),
                   'w') as f:
             json.dump(sorted_outputs, f, indent=2, ensure_ascii=False)
 
@@ -131,7 +123,7 @@ def parse_args():
     parser.add_argument('--num_programs_per_example', default=1, type=int)
     parser.add_argument('--save_path', default='/xinyuxu/ProgramFC/results/programs', type=str)
     parser.add_argument('--stop_words', type=str, default='# The claim is')
-    parser.add_argument('--max_new_tokens', type=int, default=1024)
+    parser.add_argument('--max_new_tokens', type=int, default=128)
     parser.add_argument('--parse_type',type=str,default="CONSTITUENCY")
 
     #parser.add_argument('--ckpt_dir',type=str,default='/xinyuxu/llama/llama-2-13b/')
@@ -143,68 +135,3 @@ def parse_args():
     args = parser.parse_args()
     return args
 
-def main(
-        ckpt_dir: str,
-        tokenizer_path: str,
-        temperature: float = 0.6,
-        top_p: float = 0.9,
-        max_seq_len: int = 512,
-        max_gen_len: int = 64,
-        max_batch_size: int = 6,
-):
-    """
-    Entry point of the program for generating text using a pretrained model.
-
-    Args:
-        ckpt_dir (str): The directory containing checkpoint files for the pretrained model.
-        tokenizer_path (str): The path to the tokenizer model used for text encoding/decoding.
-        temperature (float, optional): The temperature value for controlling randomness in generation.
-            Defaults to 0.6.
-        top_p (float, optional): The top-p sampling parameter for controlling diversity in generation.
-            Defaults to 0.9.
-        max_seq_len (int, optional): The maximum sequence length for input prompts. Defaults to 128.
-        max_gen_len (int, optional): The maximum length of generated sequences. Defaults to 64.
-        max_batch_size (int, optional): The maximum batch size for generating sequences. Defaults to 4.
-    """
-    generator = Llama.build(
-        ckpt_dir=ckpt_dir,
-        tokenizer_path=tokenizer_path,
-        max_seq_len=max_seq_len,
-        max_batch_size=max_batch_size,
-    )
-
-    prompts: List[str] = [
-        # For these prompts, the expected answer is the natural continuation of the prompt
-        "I believe the meaning of life is",
-        "Simply put, the theory of relativity states that ",
-        """A brief message congratulating the team on the launch:
-
-        Hi everyone,
-
-        I just """,
-        # Few shot prompt (providing a few examples before asking model to complete more);
-        """Translate English to French:
-
-        sea otter => loutre de mer
-        peppermint => menthe poivrée
-        plush girafe => girafe peluche
-        cheese =>""",
-    ]
-    results = generator.text_completion(
-        prompts,
-        max_gen_len=max_gen_len,
-        temperature=temperature,
-        top_p=top_p,
-    )
-    for prompt, result in zip(prompts, results):
-        print(prompt)
-        print(f"> {result['generation']}")
-        print("\n==================================\n")
-
-
-if __name__ == "__main__":
-    args = parse_args()
-    generator = Reasoning_Program_Generator(args)
-    print("initialized")
-    generator.batch_generate_programs()
-    # fire.Fire(main)

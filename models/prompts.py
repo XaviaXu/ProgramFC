@@ -305,13 +305,15 @@ def program():{program}'''
 template_map = {"DEPENDENCY": DEPENDENCY_TEMPLATE, "CONSTITUENCY": CONSTITUENCY_TEMPLATE, "AMR": AMR_TEMPLATE}
 
 
+def mixtral_format(sys_message,query):
+    return f'<s> [INST] {sys_message} [/INST]\n{query}'
 class Prompt_Loader:
     def __init__(self, parse_type, dataset_name) -> None:
         self.hover_program_fc = HOVER_PROGRAM_FC
         self.feverous_program_fc = FEVEROUS_PROGRAM_FC
         self.nlp = StanfordCoreNLP(r'/xinyuxu/stanford-corenlp-4.5.5')
-        #self.nlp = StanfordCoreNLP(r'E:/stanford-corenlp-4.5.5')
-        self.prompt_list = []
+        # self.nlp = StanfordCoreNLP(r'E:/stanford-corenlp-4.5.5')
+        self.prompt = ""
         self.template = template_map[parse_type]
         self.parse_type = parse_type
         self.tokenizer = stanza.Pipeline(lang='en', processors='tokenize')
@@ -348,30 +350,16 @@ class Prompt_Loader:
         else:
             raise NotImplementedError
 
-        self.prompt_list.append(
-            "Generate a python-like program that describes the reasoning steps required to verify the claim step-by-step. "
-            "The parsing tree of the claim is provided to assist in breaking down the claim and generating programs."
-            "You can call three functions in the program: 1. Question() to answer a question; 2. Verify() to verify a simple claim; 3. Predict() to predict the veracity label. Several examples are given as follows.\n")
+        self.prompt = "Generate a python-like program that describes the reasoning steps required to verify the claim step-by-step. The parsing tree of the claim is provided to assist in breaking down the claim and generating programs.You can call three functions in the program: 1. Question() to answer a question; 2. Verify() to verify a simple claim; 3. Predict() to predict the veracity label. Several examples are given as follows.\n"
         claims = re.findall(r'# The claim is that(.*?)\ndef program\(\):(.*?)\n\s*\n', template, re.DOTALL)
-        cnt = 0
         for claim, program_code in claims:
-            if cnt >= 10:
-                break
             parse_tree = self.parsing(claim)
-            self.prompt_list.append(
-                self.template.format(claim=claim.strip(), parsing=parse_tree, program=program_code + "\n"))
-            cnt += 1
+            self.prompt += self.template.format(claim=claim.strip(), parsing=parse_tree, program=program_code + "\n")
+        self.prompt += "Let's get started. The claim and parsing information is given as follows."
         print("prompt initialized")
 
     def prompt_construction(self, claim):
         parse_tree = self.parsing(claim)
         temp = self.template.format(claim=claim.strip(), parsing=parse_tree, program="")
-        cnt = 0
-        length_sum = sum(len(string) for string in self.prompt_list)
-        while length_sum + len(temp) > 4096:
-            cnt -= 1
-            length_sum -= len(self.prompt_list[cnt])
-        if cnt == 0:
-            return "\n".join(self.prompt_list) + temp
-        else:
-            return "\n".join(self.prompt_list[:cnt]) + temp
+        return mixtral_format(self.prompt, temp)
+
