@@ -287,13 +287,11 @@ def program():
 def program():'''
 
 DEPENDENCY_TEMPLATE = '''
-
 # The claim is that {claim}
 Dependency parsing of the claim:
 {parsing}def program():{program}'''
 
 CONSTITUENCY_TEMPLATE = '''
-
 # The claim is that {claim}
 Constituency parsing of the claim:
 {parsing}def program():{program}'''
@@ -312,6 +310,7 @@ class Prompt_Loader:
         self.hover_program_fc = HOVER_PROGRAM_FC
         self.feverous_program_fc = FEVEROUS_PROGRAM_FC
         self.nlp = StanfordCoreNLP(r'/xinyuxu/stanford-corenlp-4.5.5')
+        #self.nlp = StanfordCoreNLP(r'E:/stanford-corenlp-4.5.5')
         self.prompt_list = []
         self.template = template_map[parse_type]
         self.parse_type = parse_type
@@ -328,7 +327,8 @@ class Prompt_Loader:
                 analysis += f"{self.nlp.dependency_parse(sentence.text)}\n"
         elif self.parse_type == "CONSTITUENCY":
             for sentence in doc.sentences:
-                analysis += f"{self.nlp.parse(sentence.text)}\n"
+                result = self.nlp.parse(sentence.text).replace(' ' * 2, '\t')
+                analysis += f"{result}\n"
         elif self.parse_type == "AMR":
             graphs = self.amr.parse_sents([sentence.text for sentence in doc.sentences])
             for graph in graphs:
@@ -355,7 +355,7 @@ class Prompt_Loader:
         claims = re.findall(r'# The claim is that(.*?)\ndef program\(\):(.*?)\n\s*\n', template, re.DOTALL)
         cnt = 0
         for claim, program_code in claims:
-            if self.parse_type == 'AMR' and cnt >= 14:
+            if cnt >= 10:
                 break
             parse_tree = self.parsing(claim)
             self.prompt_list.append(
@@ -368,7 +368,7 @@ class Prompt_Loader:
         temp = self.template.format(claim=claim.strip(), parsing=parse_tree, program="")
         cnt = 0
         length_sum = sum(len(string) for string in self.prompt_list)
-        while length_sum + len(temp) > 8192:
+        while length_sum + len(temp) > 4096:
             cnt -= 1
             length_sum -= len(self.prompt_list[cnt])
         if cnt == 0:
