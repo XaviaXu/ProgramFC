@@ -302,7 +302,11 @@ Abstract meaning representation of the claim:
 {parsing}
 def program():{program}'''
 
-template_map = {"DEPENDENCY": DEPENDENCY_TEMPLATE, "CONSTITUENCY": CONSTITUENCY_TEMPLATE, "AMR": AMR_TEMPLATE}
+NULL_TEMPLATE ='''
+# The claim is that {claim}{parsing}
+def program():{program}
+'''
+template_map = {"DEPENDENCY": DEPENDENCY_TEMPLATE, "CONSTITUENCY": CONSTITUENCY_TEMPLATE, "AMR": AMR_TEMPLATE, "NULL":NULL_TEMPLATE}
 
 
 def mixtral_format(sys_message,query):
@@ -356,7 +360,7 @@ class Prompt_Loader:
             parse_tree = self.parsing(claim)
             self.prompt += self.template.format(claim=claim.strip(), parsing=parse_tree, program=program_code + "\n")
         self.prompt += "Let's get started. The claim and parsing information is given as follows."
-        print("prompt initialized")
+        print("prompt initialized. Total length of prompt:"+str(len(self.prompt)))
 
     def prompt_construction(self, claim):
         parse_tree = self.parsing(claim)
