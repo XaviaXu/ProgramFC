@@ -14,8 +14,8 @@ url = "https://api.together.xyz/v1/completions"
 payload = {
     "model": "mistralai/Mixtral-8x7B-Instruct-v0.1",
     "prompt": "",
-    "max_tokens": 128,
-    "stop": ["</s>", "[/INST]"],
+    "max_tokens": 256,
+    "stop": ["</s>", "[/INST]","\n\n"],
     "temperature": 0.7,
     "top_p": 0.7,
     "top_k": 50,
@@ -25,7 +25,7 @@ payload = {
 headers = {
     "accept": "application/json",
     "content-type": "application/json",
-    "Authorization": "Bearer 0a35ba9758570c9039d6d15ca7cd0bc25781d2804fa67e233335973921d52307"
+    "Authorization": ""
 }
 
 
@@ -44,15 +44,17 @@ class Reasoning_Program_Generator:
         self.max_seq_len = args.max_seq_len
         self.max_batch_size = args.max_batch_size
         self.num_hops = args.num_hops
+        headers["Authorization"] = args.api_key
 
     def update_results(self, sample, generated_text):
         # program_list = [operation.strip() for operation in generated_text.split('\n')]
         # programs = [program_list]
 
-        print(generated_text)
+        #print(generated_text)
         res = json.loads(generated_text)
-        match = re.search(r'([\s\S]*?label\s*=\s*Predict\(.*?\))', res['choices'][0]['text'])
-        text = match.group(1)
+        #match = re.search(r'([\s\S]*?label\s*=\s*Predict\(.*?\))', res['choices'][0]['text'])
+        #text = match.group(1)
+        text = res['choices'][0]['text']
         program_list = [operation.strip() for operation in text.split('\n')][1:]
 
         self.result_dict[sample['id']]['predicted_programs'].append(program_list)
@@ -67,8 +69,8 @@ class Reasoning_Program_Generator:
         with open(os.path.join(self.data_path, self.dataset_name, 'claims', 'dev.json'), 'r') as f:
             raw_dataset = json.load(f)
 
-        if self.dataset_name == 'HOVER':
-            raw_dataset = [d for d in raw_dataset if d['num_hops'] == self.num_hops]
+        #if self.dataset_name == 'HOVER':
+        #    raw_dataset = [d for d in raw_dataset if d['num_hops'] == self.num_hops]
 
         raw_dataset = raw_dataset if self.args.num_eval_samples < 0 else raw_dataset[:self.args.num_eval_samples]
         print(f"Loaded {len(raw_dataset)} examples from {self.dataset_name} dev set.")
@@ -131,7 +133,7 @@ def parse_args():
     parser.add_argument('--stop_words', type=str, default='# The claim is')
     parser.add_argument('--max_new_tokens', type=int, default=128)
     parser.add_argument('--parse_type', type=str, default="CONSTITUENCY")
-
+    parser.add_argument('--api_key',type=str)
     # parser.add_argument('--ckpt_dir',type=str,default='/xinyuxu/llama/llama-2-13b/')
     parser.add_argument('--tokenizer_path', type=str, default='/xinyuxu/llama/tokenizer.model')
     parser.add_argument('--max_seq_len', type=int, default=8192)

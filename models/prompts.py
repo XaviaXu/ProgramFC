@@ -303,9 +303,10 @@ Abstract meaning representation of the claim:
 def program():{program}'''
 
 NULL_TEMPLATE ='''
-# The claim is that {claim}{parsing}
-def program():{program}
-'''
+# The claim is that {claim}
+{parsing}
+def program():
+{program}'''
 template_map = {"DEPENDENCY": DEPENDENCY_TEMPLATE, "CONSTITUENCY": CONSTITUENCY_TEMPLATE, "AMR": AMR_TEMPLATE, "NULL":NULL_TEMPLATE}
 
 
