@@ -138,6 +138,7 @@ class Program_Execution:
         return evidence, retrieved_results
     
     def parse_program(self, ID, program, evidence):
+        #print(program)
         variable_map = {}
         claim_only = True if self.args.setting == 'close-book' else False
         retrieved_evidence = []
@@ -184,7 +185,10 @@ class Program_Execution:
         results = []
         for sample in tqdm(dataset):
             program = sample['predicted_programs']
+            #program = [s.replace("\\","") for s in program]
+            #print(program)
             gt_labels.append(sample['gold'])
+
             # get evidence
             evidence = self.gold_evidence_map[sample['id']] if self.args.setting == 'gold' else None
             
@@ -192,7 +196,7 @@ class Program_Execution:
             sample_predictions = []
             for sample_program in program:
                 try:
-                    single_prediction, retrieved_evidence = self.parse_program(sample['id'], sample_program, evidence)
+                    single_prediction, retrieved_evidence = self.parse_program(sample['id'], [s.replace("\\","") for s in sample_program], evidence)
                 except Exception as e:
                     print(f"Alert!!! execution error: {sample['id']}")
                     single_prediction = random.sample([True, False], 1)[0]
