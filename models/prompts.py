@@ -354,7 +354,12 @@ class Prompt_Loader:
         else:
             raise NotImplementedError
 
-        self.prompt = "Generate a python-like program that describes the reasoning steps required to verify the claim step-by-step. The parsing tree of the claim is provided to assist in breaking down the claim and generating programs.You can call three functions in the program: 1. Question() to answer a question; 2. Verify() to verify a simple claim; 3. Predict() to predict the veracity label. Several examples are given as follows.\n"
+        self.prompt = "Generate a python-like program that describes the reasoning steps required to verify the claim step-by-step. " \
+                      "The parsing tree of the claim is provided to assist in breaking down the claim and generating programs. " \
+                      "You can and only can call three functions in the program: 1. Question() to answer a question; 2. Verify() to verify a simple claim; 3. Predict() to predict the veracity label. " \
+                      "The only logic expression you can use is 'and'. 'not' and all relational operators are strictly prohibited. " \
+                      "You are not allowed to have any loop structure in your generated program. " \
+                      "Several examples are given as follows. You should strictly follow the template that shown in the examples.\n"
         claims = re.findall(r'# The claim is that(.*?)\ndef program\(\):(.*?)\n\s*\n', template, re.DOTALL)
         for claim, program_code in claims:
             parse_tree = self.parsing(claim)
