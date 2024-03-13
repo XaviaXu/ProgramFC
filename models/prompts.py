@@ -359,7 +359,7 @@ class Prompt_Loader:
                       "The parsing tree of the claim is provided to assist in breaking down the claim and generating programs. " \
                       "You can and only can call three functions in the program: 1. Question() to answer a question; 2. Verify() to verify a simple claim; 3. Predict() to predict the veracity label. " \
                       "The only logic expression you can use is 'and'. 'not' and all relational operators are strictly prohibited. " \
-                      "You are not allowed to have any loop structure in your generated program. " \
+                      "You are not allowed to have any loop structure in your generated program and the program should be simple and clear. " \
                       "Several examples are given as follows. You should strictly follow the template that shown in the examples.\n"
         claims = re.findall(r'# The claim is that(.*?)\ndef program\(\):(.*?)\n\s*\n', template, re.DOTALL)
         for claim, program_code in claims:
@@ -367,6 +367,7 @@ class Prompt_Loader:
             self.prompt += self.template.format(claim=claim.strip(), parsing=parse_tree, program=program_code + "\n")
         self.prompt += "Let's get started. The claim and parsing information is given as follows."
         print("prompt initialized. Total length of prompt:"+str(len(self.prompt)))
+        print(self.prompt)
 
     def prompt_construction(self, claim):
         parse_tree = self.parsing(claim)

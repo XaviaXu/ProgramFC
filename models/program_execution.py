@@ -219,7 +219,7 @@ class Program_Execution:
         if not os.path.exists(output_path):
             os.makedirs(output_path)
 
-        output_file_name = f'{self.args.dataset_name}.program.json'
+        output_file_name = f'{self.args.program_file_name}.program.json'
         with open(os.path.join(output_path, output_file_name), 'w') as f:
            f.write(json.dumps(results, indent = 2))
 

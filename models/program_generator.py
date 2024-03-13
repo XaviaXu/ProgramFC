@@ -8,6 +8,7 @@ import re
 import requests
 from prompts import Prompt_Loader
 from typing import List
+import time
 
 url = "https://api.together.xyz/v1/completions"
 
@@ -15,7 +16,7 @@ payload = {
     "model": "mistralai/Mixtral-8x7B-Instruct-v0.1",
     "prompt": "",
     "max_tokens": 256,
-    "stop": ["</s>", "[/INST]","\n\n"],
+    "stop": ["</s>", "[/INST]","# The claim is that","\n\n"],
     "temperature": 0.7,
     "top_p": 0.7,
     "top_k": 50,
@@ -94,6 +95,7 @@ class Reasoning_Program_Generator:
         for iteration in range(self.num_programs_per_example):
             print(f"Generating programs for iteration {iteration + 1}...")
             # for each chunk
+            cnt = 1
             for chunk in tqdm(dataset_chunks):
                 # create prompt
                 full_prompts = [self.prompt_loader.prompt_construction(example['claim']) for example
@@ -101,12 +103,20 @@ class Reasoning_Program_Generator:
                 # print(full_prompts)
                 for sample, full_prompt in zip(chunk, full_prompts):
                     try:
-                        # print(full_prompt)
+                        #print(full_prompt)
                         payload['prompt'] = full_prompt
                         response = requests.post(url, json=payload, headers=headers)
+                        while response.status_code!=200:
+                            print(f"Generation of {iteration}th iteration, {cnt}th claim failed. Status code {response.status_code}, reason: {response.reason}")
+                            time.sleep(60)
+                            print("Retry...")
+                            response = requests.post(url, json=payload, headers=headers)
+                        
+                        cnt+=1
                         self.update_results(sample, response.text)
                     except Exception as e:
                         logging.exception(e)
+                        print("Generated Results:"+response.text)
                         print('Error in generating reasoning programs for example: ', sample['id'])
 
         print(f"Generated {len(result_dict)} examples.")
@@ -117,7 +127,7 @@ class Reasoning_Program_Generator:
 
         # save outputs
         with open(os.path.join(self.save_path,
-                               f'Mixtral_{self.parse_type}_{self.dataset_name}_N={self.num_programs_per_example}_Hops={self.num_hops}_programs.json'),
+                               f'Mixtral_{self.parse_type}_{self.dataset_name}_N={self.num_programs_per_example}__programs.json'),
                   'w') as f:
             json.dump(sorted_outputs, f, indent=2, ensure_ascii=False)
 
