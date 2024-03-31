@@ -110,19 +110,24 @@ class Program_Linking:
         #print(program)
         variable_map = {}
         # for each command
+        params={'k':5}
         for command in program:
             c_type = self.get_command_type(command)
             final_answer = None
             # verify a claim
             if c_type == "VERIFY":
                 return_var, claim = self.parse_verify_command(command, variable_map)
-                link_dict = self.clocq.entity_linking(claim)
-                if len(link_dict)==0:
+                link_dict = self.clocq.get_search_space(question=claim,parameters=params)
+                items = [item["item"] for item in link_dict["kb_item_tuple"]]
+                print(f"original claim:{claim},linked entities:{items}")
+                if len(items)==0:
                     return 1
             elif c_type == "QUESTION":
                 return_var, question = self.parse_question_command(command, variable_map)
-                link_dict = self.clocq.entity_linking(question)
-                if len(link_dict)==0:
+                link_dict = self.clocq.get_search_space(question=question,parameters=params)
+                items = [item["item"] for item in link_dict["kb_item_tuple"]]
+                print(f"original claim:{question},linked entities:{items}")
+                if len(items)==0:
                     return 1
               
             elif c_type == 'FINAL':
@@ -138,30 +143,32 @@ class Program_Linking:
 
         gt_labels, predictions = [], []
         results = []
-        negative_linking = 0
+        s = set()
+        evidence = ""
         for sample in tqdm(dataset):
             program = sample['predicted_programs']
             #program = [s.replace("\\","") for s in program]
             #print(program)
             gt_labels.append(sample['gold'])
 
-            # get evidence
-            evidence = self.gold_evidence_map[sample['id']] if self.args.setting == 'gold' else None
-            
+            # get evidence       
             
             for sample_program in program:
                 try:
-                    negative_linking += self.parse_program(sample['id'], [s.replace("\\","") for s in sample_program], evidence)
+                    if self.parse_program(sample['id'], [s.replace("\\","") for s in sample_program], evidence)==1:
+                        print(f"Link failed. ID:{sample['id']}")
+                        s.add(sample['id'])
                 except Exception as e:
-                    print(f"Alert!!! execution error: {sample['id']}")
-                    negative_linking +=1
+                    print(f"Alert!!! execution error: {sample['id']}, error msg:{e}")
+                    s.add(sample['id'])
+
                 
-            print(f"Linking failed:{negative_linking}, program count:{len(dataset)},rate:{1-negative_linking/len(dataset)}")
+        print(f"Linking failed:{len(s)}, program count:{len(dataset)},rate:{1-len(s)/len(dataset)}")
             
 
 
 
 if __name__ == "__main__":
     args = parse_args()
-    program_executors = Program_Linking(args)
+    program_executor = Program_Linking(args)
     program_executor.execute_on_dataset()
