@@ -30,6 +30,7 @@ def parse_args():
     parser.add_argument('--corpus_index_path', default=None, type=str)
     parser.add_argument('--num_retrieved', default=5, type=int)
     parser.add_argument('--max_evidence_length', default=3000, help='to avoid exceeding GPU memory', type=int)
+    parser.add_argument('--top_k', type=int, default=5)
     args = parser.parse_args()
     return args
 
@@ -161,10 +162,7 @@ class Program_Execution:
                 if self.args.setting == 'open-book':
                     evidence, retrieved_results = self.retrieve_evidence(claim)
                     retrieved_evidence += retrieved_results
-
-                link_dict = self.clocq.get_search_space(question=claim, parameters=params)
-                items = [item["item"] for item in link_dict["kb_item_tuple"]]
-                evidence += f"a mapping of claim words to KB items and a claim-relevant KG subset are provided:{str(items)}"
+                evidence += f"a claim-relevant KG subset are provided:{self.kb_evidence(claim, self.args.top_k)}"
 
                 answer = self.QA_module.answer_verify_question(claim, evidence, claim_only)['answer_text']
                 variable_map[return_var] = self.map_direct_answer_to_label(answer)
@@ -175,9 +173,7 @@ class Program_Execution:
                 if self.args.setting == 'open-book':
                     evidence, retrieved_results = self.retrieve_evidence(question)
                     retrieved_evidence += retrieved_results
-                link_dict = self.clocq.get_search_space(question=question, parameters=params)
-                items = [item["item"] for item in link_dict["kb_item_tuple"]]
-                evidence += f"a mapping of question words to KB items and a question-relevant KG subset are provided:{str(items)}"
+                evidence += f"a question-relevant KG subset are provided:{self.kb_evidence(question, self.args.top_k)}"
 
                 answer = self.QA_module.answer_question_directly(question, evidence, claim_only)['answer_text']
                 variable_map[return_var] = answer
@@ -189,6 +185,58 @@ class Program_Execution:
                     final_answer = random.sample([True, False], 1)[0]
 
         return final_answer, retrieved_evidence
+
+    def kb_evidence(self, claim, top_k):
+        params = {"h_match": 0.4,
+                  "h_rel": 0.2,
+                  "h_conn": 0.3,
+                  "h_coh": 0.1,
+                  "d": 20,
+                  "k": 5,
+                  "p_setting": 1000,  # setting for search_space function
+                  "bm25_limit": False}
+        res = self.clocq.get_search_space(question=claim, parameters=params)
+        return self.search_space_filter(claim, res["search_space"], top_k)
+
+    def search_space_filter(self, claim, rdfs, top_k):
+        evidence = []
+        processed_claim = claim.replace(' ', '').lower()
+        for rdf in rdfs:
+            iterator = iter(rdf)
+            sub = next(iterator)['label']
+            score = self.score_rdf(processed_claim, sub)
+            try:
+                while True:
+                    pred = next(iterator)['label']
+                    obj = next(iterator)['label']
+                    total_score = (score + self.score_rdf(processed_claim, pred) + self.score_rdf(processed_claim,
+                                                                                                  obj)) / 3
+                    if total_score > 0.7:
+                        evidence.append(dict(triple=f"<{sub},{pred},{obj}>", score=total_score))
+            except:
+                continue
+
+        evidence = [dict(t) for t in {tuple(d.items()) for d in evidence}]
+        evidence.sort(key=lambda x: (x['score']), reverse=True)
+        # print(evidence)
+        # print(len(evidence))
+        return evidence[:top_k]
+
+    def score_rdf(self, claim, word):
+        word = word.replace(' ', '').lower()
+        return self.longestCommonSubsequence(claim, word) / len(word)
+
+    def longestCommonSubsequence(self, text1, text2):
+        m, n = len(text1), len(text2)
+        dp0, dp1 = [0 for _ in range(n + 1)], [0 for _ in range(n + 1)]
+        for t1 in text1:
+            for i, t2 in enumerate(text2):
+                if t1 == t2:
+                    dp1[i + 1] = dp0[i] + 1
+                else:
+                    dp1[i + 1] = max(dp0[i + 1], dp1[i])
+            dp0, dp1 = dp1, dp0
+        return dp0[-1]
 
     def execute_on_dataset(self):
         # load generated program
