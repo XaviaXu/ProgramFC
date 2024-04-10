@@ -39,7 +39,7 @@ def parse_args():
     parser.add_argument('--num_retrieved', default=5, type=int)
     parser.add_argument('--max_evidence_length', default=3000, help='to avoid exceeding GPU memory', type=int)
     parser.add_argument('--top_k', type=int, default=5)
-    parser.add_argument('--dump_path',type=str)
+    parser.add_argument('--dump_dir',type=str)
     args = parser.parse_args()
     return args
 
@@ -71,9 +71,9 @@ class Program_Execution:
             dataset = json.load(f)
         self.gold_evidence_map = {sample['id']: sample['evidence'] for sample in dataset}
 
-        
+        self.dump_file = os.path.join(args.dump_dir, args.program_file_name.replace(".json", ""), '_dump.json')
         try:
-            with open(args.dump_path, 'r') as w:
+            with open(self.dump_file, 'r') as w:
                 self.dump = json.load(w)
                 print(f"Dump file founded, successfully load {len(self.dump)} dump files.")
         except FileNotFoundError:
@@ -300,7 +300,7 @@ class Program_Execution:
         output_file_name = f'{self.args.program_file_name}.program.json'
         with open(os.path.join(output_path, output_file_name), 'w') as f:
             f.write(json.dumps(results, indent=2))
-        with open(args.dump_path,'w')as f:
+        with open(self.dump_file,'w')as f:
             f.write(json.dumps(self.dump,indent=2))
 
     def evaluation(self, predictions, gt_labels):
