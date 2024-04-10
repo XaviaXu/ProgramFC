@@ -13,6 +13,14 @@ from question_answering import T5_Question_Answering
 from retriever import PyseriniRetriever
 from evaluate import print_evaluation_results
 
+params = {"h_match": 0.4,
+                  "h_rel": 0.2,
+                  "h_conn": 0.3,
+                  "h_coh": 0.1,
+                  "d": 20,
+                  "k": 5,
+                  "p_setting": 1000,  # setting for search_space function
+                  "bm25_limit": False}
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -31,6 +39,7 @@ def parse_args():
     parser.add_argument('--num_retrieved', default=5, type=int)
     parser.add_argument('--max_evidence_length', default=3000, help='to avoid exceeding GPU memory', type=int)
     parser.add_argument('--top_k', type=int, default=5)
+    parser.add_argument('--dump_path',type=str)
     args = parser.parse_args()
     return args
 
@@ -61,6 +70,15 @@ class Program_Execution:
         with open(os.path.join(args.FV_data_path, args.dataset_name, 'claims', f'dev.json'), 'r') as f:
             dataset = json.load(f)
         self.gold_evidence_map = {sample['id']: sample['evidence'] for sample in dataset}
+
+        
+        try:
+            with open(args.dump_path, 'r') as w:
+                self.dump = json.load(w)
+                print(f"Dump file founded, successfully load {len(self.dump)} dump files.")
+        except FileNotFoundError:
+            print("Dump file not found.")
+            self.dump = []
 
     def map_direct_answer_to_label(self, predict):
         predict = predict.lower().strip()
@@ -149,8 +167,6 @@ class Program_Execution:
         variable_map = {}
         claim_only = True if self.args.setting == 'close-book' else False
         retrieved_evidence = []
-        params = {'k': 5}
-        template = "a mapping of question words to KB items and a question-relevant KG subset"
         # for each command
         for command in program:
             c_type = self.get_command_type(command)
@@ -162,7 +178,7 @@ class Program_Execution:
                 if self.args.setting == 'open-book':
                     evidence, retrieved_results = self.retrieve_evidence(claim)
                     retrieved_evidence += retrieved_results
-                evidence += f"a claim-relevant KG subset are provided:{self.kb_evidence(claim, self.args.top_k)}"
+                evidence += f"a claim-relevant KG subset are provided:{self.kb_evidence(claim, self.args.top_k,ID)}"
 
                 answer = self.QA_module.answer_verify_question(claim, evidence, claim_only)['answer_text']
                 variable_map[return_var] = self.map_direct_answer_to_label(answer)
@@ -173,7 +189,7 @@ class Program_Execution:
                 if self.args.setting == 'open-book':
                     evidence, retrieved_results = self.retrieve_evidence(question)
                     retrieved_evidence += retrieved_results
-                evidence += f"a question-relevant KG subset are provided:{self.kb_evidence(question, self.args.top_k)}"
+                evidence += f"a question-relevant KG subset are provided:{self.kb_evidence(question, self.args.top_k,ID)}"
 
                 answer = self.QA_module.answer_question_directly(question, evidence, claim_only)['answer_text']
                 variable_map[return_var] = answer
@@ -183,19 +199,17 @@ class Program_Execution:
                 except:
                     print(f"Alert!!! parsing error: {ID}")
                     final_answer = random.sample([True, False], 1)[0]
-
+        
         return final_answer, retrieved_evidence
 
-    def kb_evidence(self, claim, top_k):
-        params = {"h_match": 0.4,
-                  "h_rel": 0.2,
-                  "h_conn": 0.3,
-                  "h_coh": 0.1,
-                  "d": 20,
-                  "k": 5,
-                  "p_setting": 1000,  # setting for search_space function
-                  "bm25_limit": False}
-        res = self.clocq.get_search_space(question=claim, parameters=params)
+    def kb_evidence(self, claim, top_k,ID):
+        if ID in self.dump and claim in self.dump[ID]:
+            res = self.dump[ID][claim]
+        else:
+            res = self.clocq.get_search_space(question=claim, parameters=params)
+            if ID not in self.dump:
+                self.dump[ID] = {}
+            self.dump[ID][claim] = res
         return self.search_space_filter(claim, res["search_space"], top_k)
 
     def search_space_filter(self, claim, rdfs, top_k):
@@ -218,9 +232,7 @@ class Program_Execution:
 
         evidence = [dict(t) for t in {tuple(d.items()) for d in evidence}]
         evidence.sort(key=lambda x: (x['score']), reverse=True)
-        # print(evidence)
-        # print(len(evidence))
-        return evidence[:top_k]
+        return [item['triple'] for item in evidence][:top_k]
 
     def score_rdf(self, claim, word):
         word = word.replace(' ', '').lower()
@@ -288,6 +300,8 @@ class Program_Execution:
         output_file_name = f'{self.args.program_file_name}.program.json'
         with open(os.path.join(output_path, output_file_name), 'w') as f:
             f.write(json.dumps(results, indent=2))
+        with open(args.dump_path,'w')as f:
+            f.write(json.dumps(self.dump,indent=2))
 
     def evaluation(self, predictions, gt_labels):
         print_evaluation_results(predictions, gt_labels, num_of_classes=2)
