@@ -1,5 +1,7 @@
 import argparse
 from transformers import T5Tokenizer, T5ForConditionalGeneration
+from transformers import LlamaForCausalLM, LlamaTokenizer,LlamaForQuestionAnswering,pipeline
+
 import random
 from tqdm import tqdm
 import re
@@ -8,6 +10,8 @@ import json
 from clocq.CLOCQ import CLOCQ
 from clocq.interface.CLOCQInterfaceClient import CLOCQInterfaceClient
 from clocq.interface.CLOCQTaskHandler import CLOCQTaskHandler
+from sentence_transformers import SentenceTransformer as SBert
+from sentence_transformers.util import cos_sim
 
 from question_answering import T5_Question_Answering
 from retriever import PyseriniRetriever
@@ -18,7 +22,7 @@ params = {"h_match": 0.4,
                   "h_conn": 0.3,
                   "h_coh": 0.1,
                   "d": 20,
-                  "k": 5,
+                  "k": 10,
                   "p_setting": 1000,  # setting for search_space function
                   "bm25_limit": False}
 
@@ -60,6 +64,8 @@ class Program_Execution:
 
         self.QA_module = T5_Question_Answering(self.model, self.tokenizer)
 
+        self.sentence_model = SBert('sentence-transformers/all-mpnet-base-v2')
+
         # load retriever
         if self.args.setting == 'open-book':
             self.searcher = PyseriniRetriever(self.args.corpus_index_path, use_bm25=True, k1=0.9, b=0.4)
@@ -71,14 +77,14 @@ class Program_Execution:
             dataset = json.load(f)
         self.gold_evidence_map = {sample['id']: sample['evidence'] for sample in dataset}
 
-        self.dump_file = os.path.join(args.dump_dir, args.program_file_name.replace(".json", ""), '_dump.json')
+        self.dump_file = os.path.join(args.dump_dir, args.program_file_name.replace(".json", "_dump.json"))
         try:
             with open(self.dump_file, 'r') as w:
                 self.dump = json.load(w)
                 print(f"Dump file founded, successfully load {len(self.dump)} dump files.")
         except FileNotFoundError:
             print("Dump file not found.")
-            self.dump = []
+            self.dump = {}
 
     def map_direct_answer_to_label(self, predict):
         predict = predict.lower().strip()
@@ -214,19 +220,22 @@ class Program_Execution:
 
     def search_space_filter(self, claim, rdfs, top_k):
         evidence = []
-        processed_claim = claim.replace(' ', '').lower()
+        # processed_claim = claim.replace(' ', '').lower()
         for rdf in rdfs:
             iterator = iter(rdf)
             sub = next(iterator)['label']
-            score = self.score_rdf(processed_claim, sub)
+            if sub is None:
+                continue
+            # score = self.score_rdf(processed_claim, sub)
             try:
                 while True:
                     pred = next(iterator)['label']
                     obj = next(iterator)['label']
-                    total_score = (score + self.score_rdf(processed_claim, pred) + self.score_rdf(processed_claim,
-                                                                                                  obj)) / 3
-                    if total_score > 0.7:
-                        evidence.append(dict(triple=f"<{sub},{pred},{obj}>", score=total_score))
+                    triple = f"<{sub},{pred},{obj}>"
+                    total_score = self.score_rdf(claim,triple)
+                    # total_score = (score + self.score_rdf(processed_claim, pred) + self.score_rdf(processed_claim,obj)) / 3
+                    if total_score > 0.5:
+                        evidence.append(dict(triple=triple, score=total_score))
             except:
                 continue
 
@@ -234,9 +243,13 @@ class Program_Execution:
         evidence.sort(key=lambda x: (x['score']), reverse=True)
         return [item['triple'] for item in evidence][:top_k]
 
-    def score_rdf(self, claim, word):
-        word = word.replace(' ', '').lower()
-        return self.longestCommonSubsequence(claim, word) / len(word)
+    def score_rdf(self, claim, triple):
+        # word = word.replace(' ', '').lower()
+        # return self.longestCommonSubsequence(claim, word) / len(word)
+        embeddings1 = self.sentence_model.encode([claim])
+        embeddings2 = self.sentence_model.encode([triple])
+        return cos_sim(embeddings1, embeddings2)
+    
 
     def longestCommonSubsequence(self, text1, text2):
         m, n = len(text1), len(text2)
