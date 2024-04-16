@@ -7,11 +7,14 @@ from tqdm import tqdm
 import re
 import os
 import json
+import pickle
+import torch
 from clocq.CLOCQ import CLOCQ
 from clocq.interface.CLOCQInterfaceClient import CLOCQInterfaceClient
 from clocq.interface.CLOCQTaskHandler import CLOCQTaskHandler
 from sentence_transformers import SentenceTransformer as SBert
 from sentence_transformers.util import cos_sim
+
 
 from question_answering import T5_Question_Answering
 from retriever import PyseriniRetriever
@@ -22,7 +25,7 @@ params = {"h_match": 0.4,
                   "h_conn": 0.3,
                   "h_coh": 0.1,
                   "d": 20,
-                  "k": 10,
+                  "k": 5,
                   "p_setting": 1000,  # setting for search_space function
                   "bm25_limit": False}
 
@@ -65,7 +68,7 @@ class Program_Execution:
         self.QA_module = T5_Question_Answering(self.model, self.tokenizer)
 
         self.sentence_model = SBert('sentence-transformers/all-mpnet-base-v2')
-
+        self.sentence_model_pool = self.sentence_model.start_multi_process_pool()
         # load retriever
         if self.args.setting == 'open-book':
             self.searcher = PyseriniRetriever(self.args.corpus_index_path, use_bm25=True, k1=0.9, b=0.4)
@@ -85,6 +88,16 @@ class Program_Execution:
         except FileNotFoundError:
             print("Dump file not found.")
             self.dump = {}
+        
+        self.embedding_file = os.path.join(args.dump_dir, args.program_file_name.replace(".json", "_embedding.pickle"))
+        try:
+            with open(self.embedding_file, 'rb') as w:
+                self.embedding = pickle.load(w)
+                print(f"Embedding file founded, successfully load {len(self.embedding)} embedding files.")
+        except FileNotFoundError:
+            print("Embedding file not found.")
+            self.embedding = {}
+
 
     def map_direct_answer_to_label(self, predict):
         predict = predict.lower().strip()
@@ -185,7 +198,7 @@ class Program_Execution:
                     evidence, retrieved_results = self.retrieve_evidence(claim)
                     retrieved_evidence += retrieved_results
                 evidence += f"a claim-relevant KG subset are provided:{self.kb_evidence(claim, self.args.top_k,ID)}"
-
+                print(evidence)
                 answer = self.QA_module.answer_verify_question(claim, evidence, claim_only)['answer_text']
                 variable_map[return_var] = self.map_direct_answer_to_label(answer)
             # ask a question
@@ -196,7 +209,7 @@ class Program_Execution:
                     evidence, retrieved_results = self.retrieve_evidence(question)
                     retrieved_evidence += retrieved_results
                 evidence += f"a question-relevant KG subset are provided:{self.kb_evidence(question, self.args.top_k,ID)}"
-
+                print(evidence)
                 answer = self.QA_module.answer_question_directly(question, evidence, claim_only)['answer_text']
                 variable_map[return_var] = answer
             elif c_type == 'FINAL':
@@ -209,6 +222,7 @@ class Program_Execution:
         return final_answer, retrieved_evidence
 
     def kb_evidence(self, claim, top_k,ID):
+        # get KG search space
         if ID in self.dump and claim in self.dump[ID]:
             res = self.dump[ID][claim]
         else:
@@ -216,52 +230,42 @@ class Program_Execution:
             if ID not in self.dump:
                 self.dump[ID] = {}
             self.dump[ID][claim] = res
-        return self.search_space_filter(claim, res["search_space"], top_k)
+        rdfs = self.get_rdfs(res["search_space"])
+        # load embedding
+        claim_embedding,rdfs_embedding = self.get_embedding(claim,rdfs)
+        cosine_scores = cos_sim(rdfs_embedding,claim_embedding)    
+        return self.filter_rdf(cosine_scores,rdfs,top_k)
 
-    def search_space_filter(self, claim, rdfs, top_k):
-        evidence = []
-        # processed_claim = claim.replace(' ', '').lower()
+    def get_rdfs(self, rdfs):
+        sentences = set()
         for rdf in rdfs:
             iterator = iter(rdf)
             sub = next(iterator)['label']
-            if sub is None:
-                continue
-            # score = self.score_rdf(processed_claim, sub)
             try:
                 while True:
                     pred = next(iterator)['label']
                     obj = next(iterator)['label']
                     triple = f"<{sub},{pred},{obj}>"
-                    total_score = self.score_rdf(claim,triple)
-                    # total_score = (score + self.score_rdf(processed_claim, pred) + self.score_rdf(processed_claim,obj)) / 3
-                    if total_score > 0.5:
-                        evidence.append(dict(triple=triple, score=total_score))
+                    sentences.add(triple)
             except:
                 continue
+        sentences = list(sentences)
+        sentences.sort()
+        return sentences
 
-        evidence = [dict(t) for t in {tuple(d.items()) for d in evidence}]
-        evidence.sort(key=lambda x: (x['score']), reverse=True)
-        return [item['triple'] for item in evidence][:top_k]
+    def get_embedding(self,claim,rdfs):
+        if claim in self.embedding:
+            claim_embedding, rdfs_embedding = self.embedding[claim]["claim"],self.embedding[claim]["rdfs"]
+        else:
+            claim_embedding = self.sentence_model.encode([claim])
+            rdfs_embedding = self.sentence_model.encode_multi_process(rdfs, self.sentence_model_pool)
+            self.embedding[claim] = dict(claim=claim_embedding,rdfs=rdfs_embedding)
+        return claim_embedding,rdfs_embedding
 
-    def score_rdf(self, claim, triple):
-        # word = word.replace(' ', '').lower()
-        # return self.longestCommonSubsequence(claim, word) / len(word)
-        embeddings1 = self.sentence_model.encode([claim])
-        embeddings2 = self.sentence_model.encode([triple])
-        return cos_sim(embeddings1, embeddings2)
+    def filter_rdf(self,cosine_scores,rdfs,top_k):
+        sorted_indices = torch.argsort(cosine_scores[:, 0], descending=True)
+        return [rdfs[i] for i in sorted_indices[:top_k]]
     
-
-    def longestCommonSubsequence(self, text1, text2):
-        m, n = len(text1), len(text2)
-        dp0, dp1 = [0 for _ in range(n + 1)], [0 for _ in range(n + 1)]
-        for t1 in text1:
-            for i, t2 in enumerate(text2):
-                if t1 == t2:
-                    dp1[i + 1] = dp0[i] + 1
-                else:
-                    dp1[i + 1] = max(dp0[i + 1], dp1[i])
-            dp0, dp1 = dp1, dp0
-        return dp0[-1]
 
     def execute_on_dataset(self):
         # load generated program
@@ -271,7 +275,7 @@ class Program_Execution:
 
         gt_labels, predictions = [], []
         results = []
-        for sample in tqdm(dataset):
+        for idx, sample in enumerate(tqdm(dataset)):
             program = sample['predicted_programs']
             # program = [s.replace("\\","") for s in program]
             # print(program)
@@ -300,7 +304,12 @@ class Program_Execution:
                             'claim': sample['claim'],
                             'gold': sample['gold'],
                             'prediction': 'supports' if final_prediction == True else 'refutes'})
-
+            if idx % 50 ==0:
+                with open(self.dump_file,'w')as f:
+                    f.write(json.dumps(self.dump,indent=2))
+                with open(self.embedding_file,'wb')as f:
+                    pickle.dump(self.embedding, f)
+        self.sentence_model.stop_multi_process_pool(self.sentence_model_pool)
         # evaluate
         self.evaluation(predictions, gt_labels)
 
@@ -315,6 +324,8 @@ class Program_Execution:
             f.write(json.dumps(results, indent=2))
         with open(self.dump_file,'w')as f:
             f.write(json.dumps(self.dump,indent=2))
+        with open(self.embedding_file,'wb')as f:
+            pickle.dump(self.embedding, f)
 
     def evaluation(self, predictions, gt_labels):
         print_evaluation_results(predictions, gt_labels, num_of_classes=2)
