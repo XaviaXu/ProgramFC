@@ -223,16 +223,18 @@ class Program_Execution:
 
     def kb_evidence(self, claim, top_k,ID):
         # get KG search space
+        flag = True
         if ID in self.dump and claim in self.dump[ID]:
             res = self.dump[ID][claim]
         else:
+            flag = False
             res = self.clocq.get_search_space(question=claim, parameters=params)
             if ID not in self.dump:
                 self.dump[ID] = {}
             self.dump[ID][claim] = res
         rdfs = self.get_rdfs(res["search_space"])
         # load embedding
-        claim_embedding,rdfs_embedding = self.get_embedding(claim,rdfs)
+        claim_embedding,rdfs_embedding = self.get_embedding(claim,rdfs,flag)
         cosine_scores = cos_sim(rdfs_embedding,claim_embedding)    
         return self.filter_rdf(cosine_scores,rdfs,top_k)
 
@@ -253,10 +255,11 @@ class Program_Execution:
         sentences.sort()
         return sentences
 
-    def get_embedding(self,claim,rdfs):
-        if claim in self.embedding:
+    def get_embedding(self,claim,rdfs,flag):
+        if claim in self.embedding and flag:
             claim_embedding, rdfs_embedding = self.embedding[claim]["claim"],self.embedding[claim]["rdfs"]
         else:
+            print("embedding miss")
             claim_embedding = self.sentence_model.encode([claim])
             rdfs_embedding = self.sentence_model.encode_multi_process(rdfs, self.sentence_model_pool)
             self.embedding[claim] = dict(claim=claim_embedding,rdfs=rdfs_embedding)
@@ -292,7 +295,7 @@ class Program_Execution:
                                                                                [s.replace("\\", "") for s in
                                                                                 sample_program], evidence)
                 except Exception as e:
-                    print(f"Alert!!! execution error: {sample['id']}")
+                    print(f"Alert!!! execution error: {sample['id']}, error message: {e}")
                     single_prediction = random.sample([True, False], 1)[0]
                 sample_predictions.append(single_prediction)
 
