@@ -1,0 +1,406 @@
+[
+  {
+    "role": "system",
+    "content": "You have strong ability of reasoning. You should strictly follow the template of the correct answer. You only need to generate an executable pseudo program that reflect the reasoning steps required to verify the claim step-by-step. You can only call three functions in the program: 1. Question() to answer a question; 2. Verify() to verify a simple claim; 3. Predict() to predict the veracity label, the only logical Operators can be used is 'and'. Several examples are given as follows."
+  },
+  {
+    "role": "user",
+    "content": "The claim is that  Howard University Hospital and Providence Hospital are both located in Washington, D.C."
+  },
+  {
+    "role": "assistant",
+    "content": "```\n# Verify if Howard University Hospital is located in Washington, D.C.\nQuestion(\"Is Howard University Hospital located in Washington, D.C.?\")\nlocation_howard = Verify(\"Howard University Hospital is located in Washington, D.C.\")\n\n# Verify if Providence Hospital is located in Washington, D.C.\nQuestion(\"Is Providence Hospital located in Washington, D.C.?\")\nlocation_providence = Verify(\"Providence Hospital is located in Washington, D.C.\")\n\n# Verify if both Howard University Hospital and Providence Hospital are located in Washington, D.C.\nVerify(location_howard and location_providence)\n```"
+  },
+  {
+    "role": "user",
+    "content": "The correct answer is: def program():\n    fact_1 = Verify(\"Howard University Hospital is located in Washington, D.C.\")\n    fact_2 = Verify(\"Providence Hospital is located in Washington, D.C.\")\n    label = Predict(fact_1 and fact_2). Check the difference between yours and the standard answer, and regenerate your answer."
+  },
+  {
+    "role": "assistant",
+    "content": "```\n# Verify if Howard University Hospital is located in Washington, D.C.\nfact_1 = Verify(\"Howard University Hospital is located in Washington, D.C.\")\n\n# Verify if Providence Hospital is located in Washington, D.C.\nfact_2 = Verify(\"Providence Hospital is located in Washington, D.C.\")\n\n# Predict if both Howard University Hospital and Providence Hospital are located in Washington, D.C.\nlabel = Predict(fact_1 and fact_2)\n```"
+  },
+  {
+    "role": "user",
+    "content": "remember the correct decomposing method and the program structure, then work on the next claim."
+  },
+  {
+    "role": "user",
+    "content": "The claim is that  WWE Super Tuesday took place at an arena that currently goes by the name TD Garden."
+  },
+  {
+    "role": "assistant",
+    "content": "```\n# Verify if WWE Super Tuesday took place at an arena\nQuestion(\"Did WWE Super Tuesday take place at an arena?\")\nwwe_super_tuesday_arena = Verify(\"WWE Super Tuesday took place at an arena\")\n\n# Verify if the arena currently goes by the name TD Garden\nQuestion(\"Does the arena currently go by the name TD Garden?\")\ntd_garden_arena = Verify(\"The arena currently goes by the name TD Garden\")\n\n# Predict if WWE Super Tuesday took place at an arena that currently goes by the name TD Garden\nlabel = Predict(wwe_super_tuesday_arena and td_garden_arena)\n```"
+  },
+  {
+    "role": "user",
+    "content": "The correct answer is: def program():\n    answer_1 = Question(\"Which arena the WWE Super Tuesday took place?\")\n    fact_1 = Verify(f\"{answer_1} currently goes by the name TD Garden.\")\n    label = Predict(fact_1). Check the difference between yours and the standard answer, and regenerate your answer."
+  },
+  {
+    "role": "assistant",
+    "content": "```\n# Ask which arena WWE Super Tuesday took place\nanswer_1 = Question(\"Which arena did WWE Super Tuesday take place?\")\n\n# Verify if the arena currently goes by the name TD Garden\nfact_1 = Verify(f\"{answer_1} currently goes by the name TD Garden.\")\n\n# Predict if WWE Super Tuesday took place at an arena that currently goes by the name TD Garden\nlabel = Predict(fact_1)\n```"
+  },
+  {
+    "role": "user",
+    "content": "remember the correct decomposing method and the program structure, then work on the next claim."
+  },
+  {
+    "role": "user",
+    "content": "The claim is that  Talking Heads, an American rock band that was \"one of the most critically acclaimed bands of the 80's\" is featured in KSPN's AAA format."
+  },
+  {
+    "role": "assistant",
+    "content": "```\n# Verify if Talking Heads is an American rock band that was \"one of the most critically acclaimed bands of the 80's\"\nfact_1 = Verify(\"Talking Heads is an American rock band that was one of the most critically acclaimed bands of the 80's\")\n\n# Verify if Talking Heads is featured in KSPN's AAA format\nfact_2 = Verify(\"Talking Heads is featured in KSPN's AAA format\")\n\n# Predict if Talking Heads, the critically acclaimed band of the 80's, is featured in KSPN's AAA format\nlabel = Predict(fact_1 and fact_2)\n```"
+  },
+  {
+    "role": "user",
+    "content": "The correct answer is: def program():\n    fact_1 = Verify(\"Talking Heads is an American rock band that was 'one of the most critically acclaimed bands of the 80's'.\")\n    fact_2 = Verify(\"Talking Heads is featured in KSPN's AAA format.\")\n    label = Predict(fact_1 and fact_2). Check the difference between yours and the standard answer, and regenerate your answer."
+  },
+  {
+    "role": "assistant",
+    "content": "```\n# Verify if Talking Heads is an American rock band that was \"one of the most critically acclaimed bands of the 80's\"\nfact_1 = Verify(\"Talking Heads is an American rock band that was 'one of the most critically acclaimed bands of the 80's'.\")\n\n# Verify if Talking Heads is featured in KSPN's AAA format\nfact_2 = Verify(\"Talking Heads is featured in KSPN's AAA format.\")\n\n# Predict if Talking Heads, the critically acclaimed band of the 80's, is featured in KSPN's AAA format\nlabel = Predict(fact_1 and fact_2)\n```"
+  },
+  {
+    "role": "user",
+    "content": "remember the correct decomposing method and the program structure, then work on the next claim."
+  },
+  {
+    "role": "user",
+    "content": "The claim is that  An IndyCar race driver drove a Formula 1 car designed by Peter McCool during the 2007 Formula One season."
+  },
+  {
+    "role": "assistant",
+    "content": "```\n# Verify if an IndyCar race driver drove a Formula 1 car designed by Peter McCool\nfact_1 = Verify(\"An IndyCar race driver drove a Formula 1 car designed by Peter McCool\")\n\n# Verify if the Formula 1 car was driven during the 2007 Formula One season\nfact_2 = Verify(\"The Formula 1 car was driven during the 2007 Formula One season\")\n\n# Predict if an IndyCar race driver drove a Formula 1 car designed by Peter McCool during the 2007 Formula One season\nlabel = Predict(fact_1 and fact_2)\n```"
+  },
+  {
+    "role": "user",
+    "content": "The correct answer is: def program():\n    answer_1 = Question(\"Which Formula 1 car was designed by Peter McCool during the 2007 Formula One season?\")\n    fact_1 = Verify(f\"An IndyCar race driver drove the car {answer_1}.\")\n    label = Predict(fact_1). Check the difference between yours and the standard answer, and regenerate your answer."
+  },
+  {
+    "role": "assistant",
+    "content": "```\n# Ask which Formula 1 car was designed by Peter McCool during the 2007 Formula One season\nanswer_1 = Question(\"Which Formula 1 car was designed by Peter McCool during the 2007 Formula One season?\")\n\n# Verify if an IndyCar race driver drove the specified Formula 1 car\nfact_1 = Verify(f\"An IndyCar race driver drove the car {answer_1}.\")\n\n# Predict if an IndyCar race driver drove a Formula 1 car designed by Peter McCool during the 2007 Formula One season\nlabel = Predict(fact_1)\n```"
+  },
+  {
+    "role": "user",
+    "content": "remember the correct decomposing method and the program structure, then work on the next claim."
+  },
+  {
+    "role": "user",
+    "content": "The claim is that  Gina Bramhill was born in a village. The 2011 population of the area that includes this village was 167,446."
+  },
+  {
+    "role": "assistant",
+    "content": "```\n# Verify if Gina Bramhill was born in a village\nfact_1 = Verify(\"Gina Bramhill was born in a village\")\n\n# Verify the 2011 population of the area that includes the village\nfact_2 = Verify(\"The 2011 population of the area that includes this village was 167,446\")\n\n# Predict if Gina Bramhill was born in a village and the 2011 population of the area was 167,446\nlabel = Predict(fact_1 and fact_2)\n```"
+  },
+  {
+    "role": "user",
+    "content": "The correct answer is: def program():\n    answer_1 = Question(\"Which village was Gina Bramhill born in?\")\n    fact_1 = Verify(f\"The 2011 population of the area that includes {answer_1} was 167,446.\")\n    label = Predict(fact_1). Check the difference between yours and the standard answer, and regenerate your answer."
+  },
+  {
+    "role": "assistant",
+    "content": "```\n# Ask which village Gina Bramhill was born in\nanswer_1 = Question(\"Which village was Gina Bramhill born in?\")\n\n# Verify if the 2011 population of the area that includes the specified village was 167,446\nfact_1 = Verify(f\"The 2011 population of the area that includes {answer_1} was 167,446.\")\n\n# Predict if Gina Bramhill was born in a village and the 2011 population of the area was 167,446\nlabel = Predict(fact_1)\n```"
+  },
+  {
+    "role": "user",
+    "content": "remember the correct decomposing method and the program structure, then work on the next claim."
+  },
+  {
+    "role": "user",
+    "content": "The claim is that  Don Ashley Turlington graduated from Saint Joseph's College, a private Catholic liberal arts college in Standish."
+  },
+  {
+    "role": "assistant",
+    "content": "```\n# Verify if Don Ashley Turlington graduated from Saint Joseph's College\nfact_1 = Verify(\"Don Ashley Turlington graduated from Saint Joseph's College\")\n\n# Verify if Saint Joseph's College is a private Catholic liberal arts college in Standish\nfact_2 = Verify(\"Saint Joseph's College is a private Catholic liberal arts college in Standish\")\n\n# Predict if Don Ashley Turlington graduated from Saint Joseph's College in Standish\nlabel = Predict(fact_1 and fact_2)\n```"
+  },
+  {
+    "role": "user",
+    "content": "The correct answer is: def program():\n    fact_1 = Verify(\"Saint Joseph's College is a private Catholic liberal arts college is located in Standish.\")\n    fact_2 = Verify(f\"Don Ashley Turlington graduated from Saint Joseph's College.\")\n    label = Predict(fact_1 and fact_2). Check the difference between yours and the standard answer, and regenerate your answer."
+  },
+  {
+    "role": "assistant",
+    "content": "```\n# Verify if Saint Joseph's College is a private Catholic liberal arts college located in Standish\nfact_1 = Verify(\"Saint Joseph's College is a private Catholic liberal arts college located in Standish.\")\n\n# Verify if Don Ashley Turlington graduated from Saint Joseph's College\nfact_2 = Verify(\"Don Ashley Turlington graduated from Saint Joseph's College.\")\n\n# Predict if Don Ashley Turlington graduated from Saint Joseph's College in Standish\nlabel = Predict(fact_1 and fact_2)\n```"
+  },
+  {
+    "role": "user",
+    "content": "remember the correct decomposing method and the program structure, then work on the next claim."
+  },
+  {
+    "role": "user",
+    "content": "The claim is that  Gael and Fitness are not published in the same country."
+  },
+  {
+    "role": "assistant",
+    "content": "```\n# Verify if Gael is published in a country\nfact_1 = Verify(\"Gael is published in a country\")\n\n# Verify if Fitness is published in a different country\nfact_2 = Verify(\"Fitness is published in a different country than Gael\")\n\n# Predict if Gael and Fitness are not published in the same country\nlabel = Predict(fact_1 and fact_2)\n```"
+  },
+  {
+    "role": "user",
+    "content": "The correct answer is: def program():\n    answer_1 = Question(\"Which country was Gael published in?\")\n    answer_2 = Question(\"Which country was Fitness published in?\")\n    fact_1 = Verify(f\"{answer_1} and {answer_2} are not the same country.\")\n    label = Predict(fact_1). Check the difference between yours and the standard answer, and regenerate your answer."
+  },
+  {
+    "role": "assistant",
+    "content": "```\n# Ask which country Gael was published in\nanswer_1 = Question(\"Which country was Gael published in?\")\n\n# Ask which country Fitness was published in\nanswer_2 = Question(\"Which country was Fitness published in?\")\n\n# Verify if Gael and Fitness are not published in the same country\nfact_1 = Verify(f\"{answer_1} and {answer_2} are not the same country.\")\n\n# Predict if Gael and Fitness are not published in the same country\nlabel = Predict(fact_1)\n```"
+  },
+  {
+    "role": "user",
+    "content": "remember the correct decomposing method and the program structure, then work on the next claim."
+  },
+  {
+    "role": "user",
+    "content": "The claim is that  Blackstar is the name of the album released by David Bowie that was recorded in secret."
+  },
+  {
+    "role": "assistant",
+    "content": "```\n# Verify if Blackstar is the name of the album released by David Bowie\nfact_1 = Verify(\"Blackstar is the name of the album released by David Bowie\")\n\n# Verify if the album was recorded in secret\nfact_2 = Verify(\"The album was recorded in secret\")\n\n# Predict if Blackstar is the name of the album released by David Bowie that was recorded in secret\nlabel = Predict(fact_1 and fact_2)\n```"
+  },
+  {
+    "role": "user",
+    "content": "The correct answer is: def program():\n    fact_1 = Verify(\"David Bowie released an album called Blackstar.\")\n    fact_2 = Verify(\"David Bowie recorded an album in secret.\")\n    label = Predict(fact_1 and fact_2). Check the difference between yours and the standard answer, and regenerate your answer."
+  },
+  {
+    "role": "assistant",
+    "content": "```\n# Verify if David Bowie released an album called Blackstar\nfact_1 = Verify(\"David Bowie released an album called Blackstar.\")\n\n# Verify if David Bowie recorded an album in secret\nfact_2 = Verify(\"David Bowie recorded an album in secret.\")\n\n# Predict if Blackstar is the name of the album released by David Bowie that was recorded in secret\nlabel = Predict(fact_1 and fact_2)\n```"
+  },
+  {
+    "role": "user",
+    "content": "remember the correct decomposing method and the program structure, then work on the next claim."
+  },
+  {
+    "role": "user",
+    "content": "The claim is that  In the 2004 Hockey film produced by a former major league baseball pitcher Kurt Russell played the USA coach."
+  },
+  {
+    "role": "assistant",
+    "content": "```\n# Verify if Kurt Russell played the USA coach in the 2004 Hockey film\nfact_1 = Verify(\"Kurt Russell played the USA coach in the 2004 Hockey film\")\n\n# Verify if the 2004 Hockey film was produced by a former major league baseball pitcher\nfact_2 = Verify(\"The 2004 Hockey film was produced by a former major league baseball pitcher\")\n\n# Predict if Kurt Russell played the USA coach in the 2004 Hockey film produced by a former major league baseball pitcher\nlabel = Predict(fact_1 and fact_2)\n```"
+  },
+  {
+    "role": "user",
+    "content": "The correct answer is: def program():\n    answer_1 = Question(\"Which 2004 Hockey film was produced a former major league baseball pitcher?\")\n    fact_1 = Verify(\"Kurt Russell played the USA coach in the film {answer_1}.\")\n    label = Predict(fact_1). Check the difference between yours and the standard answer, and regenerate your answer."
+  },
+  {
+    "role": "assistant",
+    "content": "```\n# Ask which 2004 Hockey film was produced by a former major league baseball pitcher\nanswer_1 = Question(\"Which 2004 Hockey film was produced by a former major league baseball pitcher?\")\n\n# Verify if Kurt Russell played the USA coach in the specified film\nfact_1 = Verify(f\"Kurt Russell played the USA coach in the film {answer_1}.\")\n\n# Predict if Kurt Russell played the USA coach in the 2004 Hockey film produced by a former major league baseball pitcher\nlabel = Predict(fact_1)\n```"
+  },
+  {
+    "role": "user",
+    "content": "remember the correct decomposing method and the program structure, then work on the next claim."
+  },
+  {
+    "role": "user",
+    "content": "The claim is that  Along with the New York Islanders and the New York Rangers, the New Jersey Devils NFL franchise is popular in the New York metropolitan area."
+  },
+  {
+    "role": "assistant",
+    "content": "```\n# Verify if the New Jersey Devils NFL franchise is popular in the New York metropolitan area\nfact_1 = Verify(\"The New Jersey Devils NFL franchise is popular in the New York metropolitan area\")\n\n# Verify if the New York Islanders are popular in the New York metropolitan area\nfact_2 = Verify(\"The New York Islanders are popular in the New York metropolitan area\")\n\n# Verify if the New York Rangers are popular in the New York metropolitan area\nfact_3 = Verify(\"The New York Rangers are popular in the New York metropolitan area\")\n\n# Predict if the New Jersey Devils NFL franchise, New York Islanders, and New York Rangers are popular in the New York metropolitan area\nlabel = Predict(fact_1 and fact_2 and fact_3)\n```"
+  },
+  {
+    "role": "user",
+    "content": "The correct answer is: def program():\n    fact_1 = Verify(\"The New York Islanders and the New York Rangers are popular in the New York metropolitan area.\")\n    fact_2 = Verify(\"The New Jersey Devils NFL franchise is popular in the New York metropolitan area.\")\n    label = Predict(fact_1 and fact_2). Check the difference between yours and the standard answer, and regenerate your answer."
+  },
+  {
+    "role": "assistant",
+    "content": "```\n# Verify if the New York Islanders and the New York Rangers are popular in the New York metropolitan area\nfact_1 = Verify(\"The New York Islanders and the New York Rangers are popular in the New York metropolitan area.\")\n\n# Verify if the New Jersey Devils NFL franchise is popular in the New York metropolitan area\nfact_2 = Verify(\"The New Jersey Devils NFL franchise is popular in the New York metropolitan area.\")\n\n# Predict if the New Jersey Devils NFL franchise, New York Islanders, and New York Rangers are popular in the New York metropolitan area\nlabel = Predict(fact_1 and fact_2)\n```"
+  },
+  {
+    "role": "user",
+    "content": "remember the correct decomposing method and the program structure, then work on the next claim."
+  },
+  {
+    "role": "user",
+    "content": "The claim is that  Jack McFarland is the best known role of the host of the 64th Annual Tony Awards."
+  },
+  {
+    "role": "assistant",
+    "content": "```\n# Verify if Jack McFarland is the best known role of the host of the 64th Annual Tony Awards\nfact_1 = Verify(\"Jack McFarland is the best known role of the host of the 64th Annual Tony Awards\")\n\n# Predict if Jack McFarland is the best known role of the host of the 64th Annual Tony Awards\nlabel = Predict(fact_1)\n```"
+  },
+  {
+    "role": "user",
+    "content": "The correct answer is: def program():\n    answer_1 = Question(\"Who is the host of the 64th Annual Tony Awards?\")\n    fact_1 = Verify(f\"Jack McFarland is the best known role of {answer_1}.)\n    label = Predict(fact_1). Check the difference between yours and the standard answer, and regenerate your answer."
+  },
+  {
+    "role": "assistant",
+    "content": "```\n# Ask who is the host of the 64th Annual Tony Awards\nanswer_1 = Question(\"Who is the host of the 64th Annual Tony Awards?\")\n\n# Verify if Jack McFarland is the best known role of the specified host\nfact_1 = Verify(f\"Jack McFarland is the best known role of {answer_1}.\")\n\n# Predict if Jack McFarland is the best known role of the host of the 64th Annual Tony Awards\nlabel = Predict(fact_1)\n```"
+  },
+  {
+    "role": "user",
+    "content": "remember the correct decomposing method and the program structure, then work on the next claim."
+  },
+  {
+    "role": "user",
+    "content": "The claim is that  The song recorded by Fergie that was produced by Polow da Don and was followed by Life Goes On was M.I.L.F.$."
+  },
+  {
+    "role": "assistant",
+    "content": "```\n# Verify if M.I.L.F.$ is the song recorded by Fergie\nfact_1 = Verify(\"M.I.L.F.$ is the song recorded by Fergie\")\n\n# Verify if the song was produced by Polow da Don\nfact_2 = Verify(\"The song was produced by Polow da Don\")\n\n# Verify if the song was followed by Life Goes On\nfact_3 = Verify(\"The song was followed by Life Goes On\")\n\n# Predict if M.I.L.F.$ is the song recorded by Fergie, produced by Polow da Don, and followed by Life Goes On\nlabel = Predict(fact_1 and fact_2 and fact_3)\n```"
+  },
+  {
+    "role": "user",
+    "content": "The correct answer is: def program():\n    fact_1 = Verify(\"M.I.L.F.$ was recorded by Fergie that was produced by Polow da Don.\")\n    fact_2 = Verify(\"M.I.L.F.$ was was followed by Life Goes On.\")\n    label = Predict(fact_1 and fact_2). Check the difference between yours and the standard answer, and regenerate your answer."
+  },
+  {
+    "role": "assistant",
+    "content": "```\n# Verify if M.I.L.F.$ was recorded by Fergie and produced by Polow da Don\nfact_1 = Verify(\"M.I.L.F.$ was recorded by Fergie that was produced by Polow da Don.\")\n\n# Verify if M.I.L.F.$ was followed by Life Goes On\nfact_2 = Verify(\"M.I.L.F.$ was followed by Life Goes On.\")\n\n# Predict if M.I.L.F.$ is the song recorded by Fergie, produced by Polow da Don, and followed by Life Goes On\nlabel = Predict(fact_1 and fact_2)\n```"
+  },
+  {
+    "role": "user",
+    "content": "remember the correct decomposing method and the program structure, then work on the next claim."
+  },
+  {
+    "role": "user",
+    "content": "The claim is that  Eatza Pizza and Your Pie were not founded in the same state."
+  },
+  {
+    "role": "assistant",
+    "content": "```\n# Verify if Eatza Pizza was founded in a state\nfact_1 = Verify(\"Eatza Pizza was founded in a state\")\n\n# Verify if Your Pie was founded in a different state than Eatza Pizza\nfact_2 = Verify(\"Your Pie was founded in a different state than Eatza Pizza\")\n\n# Predict if Eatza Pizza and Your Pie were not founded in the same state\nlabel = Predict(fact_1 and fact_2)\n```"
+  },
+  {
+    "role": "user",
+    "content": "The correct answer is: def program():\n    answer_1 = Question(\"Which state was Eatza Pizza founded in?\")\n    answer_2 = Question(\"Which state was Your Pie founded in?\")\n    fact_1 = Verify(f\"{answer_1} and {answer_2} are not the same state.\")\n    label = Predict(fact_1). Check the difference between yours and the standard answer, and regenerate your answer."
+  },
+  {
+    "role": "assistant",
+    "content": "```\n# Ask which state Eatza Pizza was founded in\nanswer_1 = Question(\"Which state was Eatza Pizza founded in?\")\n\n# Ask which state Your Pie was founded in\nanswer_2 = Question(\"Which state was Your Pie founded in?\")\n\n# Verify if Eatza Pizza and Your Pie were not founded in the same state\nfact_1 = Verify(f\"{answer_1} and {answer_2} are not the same state.\")\n\n# Predict if Eatza Pizza and Your Pie were not founded in the same state\nlabel = Predict(fact_1)\n```"
+  },
+  {
+    "role": "user",
+    "content": "remember the correct decomposing method and the program structure, then work on the next claim."
+  },
+  {
+    "role": "user",
+    "content": "The claim is that  Gregg Rolie and Rob Tyner, are not a keyboardist."
+  },
+  {
+    "role": "assistant",
+    "content": "```\n# Verify if Gregg Rolie is not a keyboardist\nfact_1 = Verify(\"Gregg Rolie is not a keyboardist\")\n\n# Verify if Rob Tyner is not a keyboardist\nfact_2 = Verify(\"Rob Tyner is not a keyboardist\")\n\n# Predict if Gregg Rolie and Rob Tyner are not keyboardists\nlabel = Predict(fact_1 and fact_2)\n```"
+  },
+  {
+    "role": "user",
+    "content": "The correct answer is: def program():\n    fact_1 = Verify(\"Gregg Rolie is not a keyboardist.\")\n    fact_2 = Verify(\"Rob Tyner is not a keyboardist.\")\n    label = Predict(fact_1 and fact_2). Check the difference between yours and the standard answer, and regenerate your answer."
+  },
+  {
+    "role": "assistant",
+    "content": "```\n# Verify if Gregg Rolie is not a keyboardist\nfact_1 = Verify(\"Gregg Rolie is not a keyboardist.\")\n\n# Verify if Rob Tyner is not a keyboardist\nfact_2 = Verify(\"Rob Tyner is not a keyboardist.\")\n\n# Predict if Gregg Rolie and Rob Tyner are not keyboardists\nlabel = Predict(fact_1 and fact_2)\n```"
+  },
+  {
+    "role": "user",
+    "content": "remember the correct decomposing method and the program structure, then work on the next claim."
+  },
+  {
+    "role": "user",
+    "content": "The claim is that  Maria Esther Andion Bueno, not Jimmy Connors, is the player that is from Brazil."
+  },
+  {
+    "role": "assistant",
+    "content": "```\n# Verify if Maria Esther Andion Bueno is from Brazil\nfact_1 = Verify(\"Maria Esther Andion Bueno is from Brazil\")\n\n# Verify if Jimmy Connors is not from Brazil\nfact_2 = Verify(\"Jimmy Connors is not from Brazil\")\n\n# Predict if Maria Esther Andion Bueno, not Jimmy Connors, is the player from Brazil\nlabel = Predict(fact_1 and fact_2)\n```"
+  },
+  {
+    "role": "user",
+    "content": "The correct answer is: def program():\n    fact_1 = Verify(\"Maria Esther Andion Bueno is from Brazil.\")\n    fact_2 = Verify(\"Jimmy Connors is not from Brazil.\")\n    label = Predict(fact_1 and fact_2). Check the difference between yours and the standard answer, and regenerate your answer."
+  },
+  {
+    "role": "assistant",
+    "content": "```\n# Verify if Maria Esther Andion Bueno is from Brazil\nfact_1 = Verify(\"Maria Esther Andion Bueno is from Brazil.\")\n\n# Verify if Jimmy Connors is not from Brazil\nfact_2 = Verify(\"Jimmy Connors is not from Brazil.\")\n\n# Predict if Maria Esther Andion Bueno, not Jimmy Connors, is the player from Brazil\nlabel = Predict(fact_1 and fact_2)\n```"
+  },
+  {
+    "role": "user",
+    "content": "remember the correct decomposing method and the program structure, then work on the next claim."
+  },
+  {
+    "role": "user",
+    "content": "The claim is that  Vladimir Igorevich Arnold died after Georg Cantor."
+  },
+  {
+    "role": "assistant",
+    "content": "```\n# Verify if Vladimir Igorevich Arnold died\nfact_1 = Verify(\"Vladimir Igorevich Arnold died\")\n\n# Verify if Georg Cantor died after Vladimir Igorevich Arnold\nfact_2 = Verify(\"Georg Cantor died after Vladimir Igorevich Arnold\")\n\n# Predict if Vladimir Igorevich Arnold died after Georg Cantor\nlabel = Predict(fact_1 and fact_2)\n```"
+  },
+  {
+    "role": "user",
+    "content": "The correct answer is: def program():\n    answer_1 = Question(\"When did Vladimir Igorevich Arnold die?\")\n    answer_2 = Question(\"When did Georg Cantor die?\")\n    fact_1 = Verify(f\"{answer_1} is after {answer_2}.\")\n    label = Predict(fact_1). Check the difference between yours and the standard answer, and regenerate your answer."
+  },
+  {
+    "role": "assistant",
+    "content": "```\n# Ask when Vladimir Igorevich Arnold died\nanswer_1 = Question(\"When did Vladimir Igorevich Arnold die?\")\n\n# Ask when Georg Cantor died\nanswer_2 = Question(\"When did Georg Cantor die?\")\n\n# Verify if Vladimir Igorevich Arnold died after Georg Cantor\nfact_1 = Verify(f\"{answer_1} is after {answer_2}.\")\n\n# Predict if Vladimir Igorevich Arnold died after Georg Cantor\nlabel = Predict(fact_1)\n```"
+  },
+  {
+    "role": "user",
+    "content": "remember the correct decomposing method and the program structure, then work on the next claim."
+  },
+  {
+    "role": "user",
+    "content": "The claim is that  Barton Mine was halted by a natural disaster not Camlaren Mine."
+  },
+  {
+    "role": "assistant",
+    "content": "```\n# Verify if Barton Mine was halted by a natural disaster\nfact_1 = Verify(\"Barton Mine was halted by a natural disaster\")\n\n# Verify if Camlaren Mine was not halted by a natural disaster\nfact_2 = Verify(\"Camlaren Mine was not halted by a natural disaster\")\n\n# Predict if Barton Mine was halted by a natural disaster not Camlaren Mine\nlabel = Predict(fact_1 and fact_2)\n```"
+  },
+  {
+    "role": "user",
+    "content": "The correct answer is: def program():\n    fact_1 = Verify(\"Barton Mine was halted by a natural disaster.\")\n    fact_2 = Verify(\"Camlaren Mine was not halted by a natural disaster.\")\n    label = Predict(fact_1 and fact_2). Check the difference between yours and the standard answer, and regenerate your answer."
+  },
+  {
+    "role": "assistant",
+    "content": "```\n# Verify if Barton Mine was halted by a natural disaster\nfact_1 = Verify(\"Barton Mine was halted by a natural disaster.\")\n\n# Verify if Camlaren Mine was not halted by a natural disaster\nfact_2 = Verify(\"Camlaren Mine was not halted by a natural disaster.\")\n\n# Predict if Barton Mine was halted by a natural disaster not Camlaren Mine\nlabel = Predict(fact_1 and fact_2)\n```"
+  },
+  {
+    "role": "user",
+    "content": "remember the correct decomposing method and the program structure, then work on the next claim."
+  },
+  {
+    "role": "user",
+    "content": "The claim is that  John O'Hara and Rabindranath Tagore are not the same nationality."
+  },
+  {
+    "role": "assistant",
+    "content": "```\n# Verify if John O'Hara is a nationality\nfact_1 = Verify(\"John O'Hara is a nationality\")\n\n# Verify if Rabindranath Tagore is a different nationality than John O'Hara\nfact_2 = Verify(\"Rabindranath Tagore is a different nationality than John O'Hara\")\n\n# Predict if John O'Hara and Rabindranath Tagore are not the same nationality\nlabel = Predict(fact_1 and fact_2)\n```"
+  },
+  {
+    "role": "user",
+    "content": "The correct answer is: def program():\n    answer_1 = Question(\"What is the nationality of John O'Hara?\")\n    answer_2 = Question(\"What is the nationality of Rabindranath Tagore?\")\n    fact_1 = Verify(f\"{answer_1} and {answer_2} are not the same nationality.\")\n    label = Predict(fact_1). Check the difference between yours and the standard answer, and regenerate your answer."
+  },
+  {
+    "role": "assistant",
+    "content": "```\n# Ask for the nationality of John O'Hara\nanswer_1 = Question(\"What is the nationality of John O'Hara?\")\n\n# Ask for the nationality of Rabindranath Tagore\nanswer_2 = Question(\"What is the nationality of Rabindranath Tagore?\")\n\n# Verify if John O'Hara and Rabindranath Tagore are not the same nationality\nfact_1 = Verify(f\"{answer_1} and {answer_2} are not the same nationality.\")\n\n# Predict if John O'Hara and Rabindranath Tagore are not the same nationality\nlabel = Predict(fact_1)\n```"
+  },
+  {
+    "role": "user",
+    "content": "remember the correct decomposing method and the program structure, then work on the next claim."
+  },
+  {
+    "role": "user",
+    "content": "The claim is that  Thomas Loren Friedman has won more Pulitzer Prizes than Colson Whitehead."
+  },
+  {
+    "role": "assistant",
+    "content": "```\n# Verify if Thomas Loren Friedman has won a Pulitzer Prize\nfact_1 = Verify(\"Thomas Loren Friedman has won a Pulitzer Prize\")\n\n# Verify if Colson Whitehead has won a different number of Pulitzer Prizes than Thomas Loren Friedman\nfact_2 = Verify(\"Colson Whitehead has won a different number of Pulitzer Prizes than Thomas Loren Friedman\")\n\n# Predict if Thomas Loren Friedman has won more Pulitzer Prizes than Colson Whitehead\nlabel = Predict(fact_1 and fact_2)\n```"
+  },
+  {
+    "role": "user",
+    "content": "The correct answer is: def program():\n    answer_1 = Question(\"How many Pulitzer Prizes has Thomas Loren Friedman won?\")\n    answer_2 = Question(\"How many Pulitzer Prizes has Colson Whitehead won?\")\n    fact_1 = Verify(f\"{answer_1} is more than {answer_2}.\")\n    label = Predict(fact_1). Check the difference between yours and the standard answer, and regenerate your answer."
+  },
+  {
+    "role": "assistant",
+    "content": "```\n# Ask how many Pulitzer Prizes Thomas Loren Friedman has won\nanswer_1 = Question(\"How many Pulitzer Prizes has Thomas Loren Friedman won?\")\n\n# Ask how many Pulitzer Prizes Colson Whitehead has won\nanswer_2 = Question(\"How many Pulitzer Prizes has Colson Whitehead won?\")\n\n# Verify if Thomas Loren Friedman has won more Pulitzer Prizes than Colson Whitehead\nfact_1 = Verify(f\"{answer_1} is more than {answer_2}.\")\n\n# Predict if Thomas Loren Friedman has won more Pulitzer Prizes than Colson Whitehead\nlabel = Predict(fact_1)\n```"
+  },
+  {
+    "role": "user",
+    "content": "remember the correct decomposing method and the program structure, then work on the next claim."
+  },
+  {
+    "role": "user",
+    "content": "The claim is that  The model of car Trevor Bayne drives was introduced for model year 2006. The Rookie of The Year in the 1997 CART season drives it in the NASCAR Sprint Cup."
+  },
+  {
+    "role": "assistant",
+    "content": "```\n# Verify if the model of car Trevor Bayne drives was introduced for model year 2006\nfact_1 = Verify(\"The model of car Trevor Bayne drives was introduced for model year 2006\")\n\n# Verify if the Rookie of The Year in the 1997 CART season drives the same car in the NASCAR Sprint Cup\nfact_2 = Verify(\"The Rookie of The Year in the 1997 CART season drives the same car in the NASCAR Sprint Cup\")\n\n# Predict if the model of car Trevor Bayne drives was introduced for model year 2006 and the Rookie of The Year in the 1997 CART season drives it in the NASCAR Sprint Cup\nlabel = Predict(fact_1 and fact_2)\n```"
+  },
+  {
+    "role": "user",
+    "content": "The correct answer is: def program():\n    answer_1 = Question(\"Which model of car is drived by Trevor Bayne?\")\n    fact_1 = Verify(f\"{answer_1} was introduced for model year 2006.\")\n    answer_2 = Question(\"Who is the Rookie of The Year in the 1997 CART season?\")\n    fact_2 = Verify(f\"{answer_2} drives the model of car Trevor Bayne drives in the NASCAR Sprint Cup.\")\n    label = predict(fact_1 and fact_2). Check the difference between yours and the standard answer, and regenerate your answer."
+  },
+  {
+    "role": "assistant",
+    "content": "```\n# Ask which model of car is driven by Trevor Bayne\nanswer_1 = Question(\"Which model of car is driven by Trevor Bayne?\")\n\n# Verify if the model of car Trevor Bayne drives was introduced for model year 2006\nfact_1 = Verify(f\"{answer_1} was introduced for model year 2006.\")\n\n# Ask who is the Rookie of The Year in the 1997 CART season\nanswer_2 = Question(\"Who is the Rookie of The Year in the 1997 CART season?\")\n\n# Verify if the Rookie of The Year in the 1997 CART season drives the same car as Trevor Bayne in the NASCAR Sprint Cup\nfact_2 = Verify(f\"{answer_2} drives the model of car Trevor Bayne drives in the NASCAR Sprint Cup.\")\n\n# Predict if the model of car Trevor Bayne drives was introduced for model year 2006 and the Rookie of The Year in the 1997 CART season drives it in the NASCAR Sprint Cup\nlabel = Predict(fact_1 and fact_2)\n```"
+  },
+  {
+    "role": "user",
+    "content": "remember the correct decomposing method and the program structure, then work on the next claim."
+  }
+]
