@@ -423,7 +423,7 @@ class Prompt_Loader:
         #     self.chatcot = json.load(f)
         with open('HOVER-chat-parsing-4.json', 'r', encoding='utf-8') as f:
             self.chatcot = json.load(f)
-        with open('HOVER-adaptive-4.json', 'r', encoding='utf-8') as f:
+        with open('HOVER-adaptive-llama3.json', 'r', encoding='utf-8') as f:
             self.adaptive = json.load(f)
         self.HanLP = hanlp.load(hanlp.pretrained.mtl.UD_ONTONOTES_TOK_POS_LEM_FEA_NER_SRL_DEP_SDP_CON_XLMR_BASE)
 
@@ -435,7 +435,7 @@ class Prompt_Loader:
             prompt.append({"role": "user",
                            "content": f"Claim:{claim}\nConstituency parsing tree:\n{pretty_print(doc['con'])}\n Now "
                                       f"you need to briefly show how you reasoning using the parse tree(within 300 "
-                                      f"words) and generate a single program."})
+                                      f"words) and generate a single program in a code block."})
             return prompt
         if chatcot:
             prompt = self.chatcot.copy()

@@ -1,9 +1,15 @@
+import time
+
 import backoff  # for exponential backoff
 import openai
 from openai import OpenAI
+from together import Together
 import os
 import asyncio
-from typing import Any
+from typing import Any, Type
+
+from together.error import InvalidRequestError
+
 
 # @backoff.on_exception(backoff.expo, openai.error.RateLimitError)
 def completions_with_backoff(**kwargs):
@@ -12,39 +18,6 @@ def completions_with_backoff(**kwargs):
 # @backoff.on_exception(backoff.expo, openai.error.RateLimitError)
 def chat_completions_with_backoff(**kwargs):
     return openai.ChatCompletion.create(**kwargs)
-
-async def dispatch_openai_chat_requests(
-    messages_list: list[list[dict[str,Any]]],
-    model: str,
-    temperature: float,
-    max_tokens: int,
-    top_p: float,
-    stop_words: list[str]
-) -> list[str]:
-    """Dispatches requests to OpenAI API asynchronously.
-    
-    Args:
-        messages_list: List of messages to be sent to OpenAI ChatCompletion API.
-        model: OpenAI model to use.
-        temperature: Temperature to use for the model.
-        max_tokens: Maximum number of tokens to generate.
-        top_p: Top p to use for the model.
-        stop_words: List of words to stop the model from generating.
-    Returns:
-        List of responses from OpenAI API.
-    """
-    async_responses = [
-        self.openai.chat.completions.create(
-            model=model,
-            messages=x,
-            temperature=temperature,
-            max_tokens=max_tokens,
-            top_p=top_p,
-            stop = stop_words
-        )
-        for x in messages_list
-    ]
-    return await asyncio.gather(*async_responses)
 
 async def dispatch_openai_prompt_requests(
     messages_list: list[list[dict[str,Any]]],
@@ -75,7 +48,10 @@ class OpenAIModel:
         self.model_name = model_name
         self.max_new_tokens = max_new_tokens
         self.stop_words = stop_words
-        self.openai = OpenAI(api_key=API_KEY)
+        if 'gpt' in model_name:
+            self.openai = OpenAI(api_key=API_KEY)
+        else:
+            self.openai = Together(api_key=API_KEY)
 
     # used for chat-gpt and gpt-4
     def chat_generate(self, input_string,chatcot, adaptive,temperature = 0.2):
@@ -85,39 +61,69 @@ class OpenAIModel:
             message = [
                         {"role": "user", "content": input_string}
                     ]
-        response = self.openai.chat.completions.create(
-                model = self.model_name,
-                messages=message,
-                max_tokens = self.max_new_tokens,
-                temperature = temperature,
-                top_p = 1.0,
-                stop = self.stop_words
-        )
+        while True:
+            try:
+                response = self.openai.chat.completions.create(
+                        model = self.model_name,
+                        messages=message,
+                        max_tokens = self.max_new_tokens,
+                        temperature = temperature,
+                        top_p = 1.0,
+                        stop = self.stop_words
+                )
+                break
+            except Exception as e:
+                # print(e)
+                if 'Input validation error' in e.args[0]:
+                    del message[-3:-1]
+                # time.sleep(5)
         generated_text = response.choices[0].message.content.strip()
         return generated_text
     
     # used for text/code-davinci
-    def prompt_generate(self, input_string, temperature = 0.0):
-        response = completions_with_backoff(
-            model = self.model_name,
-            prompt = input_string,
-            max_tokens = self.max_new_tokens,
-            temperature = temperature,
-            top_p = 1.0,
-            frequency_penalty = 0.0,
-            presence_penalty = 0.0,
-            stop = self.stop_words
-        )
-        generated_text = response['choices'][0]['text'].strip()
+
+    def convert_prompt(self,messages):
+        prompt_list = ['<|begin_of_text|>']
+        for message in messages:
+            prompt_list.append(f"<|start_header_id|>{message['role']}<|end_header_id|>\n{message['content']}<|eot_id|>\n")
+        prompt_list.append("<|start_header_id|>assistant<|end_header_id|>")
+        return prompt_list
+
+    def prompt_generate(self, input_string, adaptive,temperature = 0.0):
+        if adaptive:
+            prompt_list = self.convert_prompt(input_string)
+        while True:
+            try:
+                if adaptive:
+                    prompt = '\n'.join(prompt_list)
+                else:
+                    prompt = input_string
+                response = self.openai.completions.create(
+                    model=self.model_name,
+                    prompt=prompt,
+                    max_tokens=self.max_new_tokens,
+                    temperature=temperature,
+                    top_p=1.0,
+                    frequency_penalty=0.0,
+                    presence_penalty=0.0,
+                    stop=self.stop_words
+                )
+                break
+            except Exception as e:
+                # print(e)
+                if 'Input validation error' in e.args[0]:
+                    del prompt_list[-4:-2]
+
+        generated_text = response.choices[0].text.strip()
         return generated_text
 
     def generate(self, input_string, chatcot,adaptive, temperature = 0.0):
-        if self.model_name in ['text-davinci-002', 'code-davinci-002', 'text-davinci-003']:
-            return self.prompt_generate(input_string, temperature)
-        elif self.model_name in ['gpt-4', 'gpt-3.5-turbo','gpt-4o']:
-            return self.chat_generate(input_string,chatcot, adaptive,temperature)
+        if self.model_name in ['meta-llama/Meta-Llama-3-70B']:
+            return self.prompt_generate(input_string, adaptive,temperature)
         else:
-            raise Exception("Model name not recognized")
+            return self.chat_generate(input_string,chatcot, adaptive,temperature)
+        # else:
+        #     raise Exception("Model name not recognized")
     
     def batch_chat_generate(self, messages_list, temperature = 0.2):
         open_ai_messages_list = []

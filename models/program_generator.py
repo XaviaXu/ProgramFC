@@ -2,6 +2,7 @@ import argparse
 import os
 import json
 from tqdm import tqdm
+import traceback
 
 from prompts import Prompt_Loader
 from utils import OpenAIModel
@@ -15,15 +16,15 @@ class Reasoning_Program_Generator:
         self.model_name = args.model_name
         self.save_path = args.save_path
         self.num_programs_per_example = args.num_programs_per_example
-
         self.openai_api = OpenAIModel(args.api_key, args.model_name, args.stop_words, args.max_new_tokens)
         self.prompt_loader = Prompt_Loader()
 
     def update_results(self, sample, generated_text):
         if self.args.adaptive:
-            code_block_pattern = r'```python(.*?)```'
+            # code_block_pattern = r'```python(.*?)```'
+            code_block_pattern = r'```(.*?)```'
             lines = re.findall(code_block_pattern, generated_text, re.DOTALL)[0].split("\n")
-            program_list = [line for line in lines if line.strip() and not line.strip().startswith('#')]
+            program_list = [line for line in lines if line.strip() and not line.strip().startswith('#') and not line.strip().startswith('python')]
 
         elif self.args.model_name=='gpt-3.5-turbo' and self.args.chatcot:
             generated_text = generated_text.strip('```').strip()
@@ -31,6 +32,7 @@ class Reasoning_Program_Generator:
             program_list = [line for line in program_list if line.strip() and not line.strip().startswith('#')]
         elif self.args.model_name=='gpt-4' and self.args.chatcot:
             program_list = [operation.strip() for operation in generated_text.split('\n')[1:]]
+
         else:
             program_list = [operation.strip() for operation in generated_text.split('\n')]
         # programs = [program_list]
@@ -87,6 +89,7 @@ class Reasoning_Program_Generator:
                         output = self.openai_api.generate(full_prompt,self.args.chatcot,self.args.adaptive, temperature)
                         self.update_results(sample, output)
                     except Exception as e:
+                        print(traceback.print_exc())
                         print(f"Error in generating reasoning programs for example:{sample['id']},error message:{e}" )
 
         print(f"Generated {len(result_dict)} examples.")
@@ -96,7 +99,7 @@ class Reasoning_Program_Generator:
         sorted_outputs = sorted(outputs, key=lambda x: x['idx'])
 
         # save outputs
-        with open(os.path.join(self.save_path, f'{self.dataset_name}10_N={self.num_programs_per_example}_{self.model_name}_programs.json'), 'w',encoding='utf-8') as f:
+        with open(os.path.join(self.save_path, f'{self.dataset_name}10_N={self.num_programs_per_example}_llama3_programs.json'), 'w',encoding='utf-8') as f:
             json.dump(sorted_outputs, f, indent=2, ensure_ascii=False)
 
 def parse_args():
@@ -109,7 +112,7 @@ def parse_args():
     parser.add_argument('--save_path', default = './results/programs', type=str)
     parser.add_argument('--api_key', type=str)
     parser.add_argument('--model_name', type=str, default='text-davinci-003')
-    parser.add_argument('--stop_words', type=list, default=['### Brief Explanation:','### Explanation:','### Brief Reasoning:'])
+    parser.add_argument('--stop_words', type=list, default=['assistant\n\n','# The claim is that','### Brief Explanation:','### Explanation:','### Brief Reasoning:'])
     parser.add_argument('--max_new_tokens', type=int, default=1024)
     parser.add_argument('--chatcot',type=bool,default=False)
     parser.add_argument('--adaptive',type=bool,default=False)
